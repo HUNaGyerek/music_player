@@ -1,0 +1,135 @@
+@import url("https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap");
+
+* {
+  font-family: "Inter", sans-serif;
+  font-style: normal;
+}
+
+body {
+  overflow: hidden;
+  background-color: transparent !important;
+}
+
+.music-player {
+  background-color: #343434;
+  color: white;
+  padding: 20px;
+  border-radius: 10px;
+  max-width: 800px;
+  max-height: 200px;
+  position: relative;
+  user-select: none;
+}
+.music-player img {
+  border-radius: 5px;
+  width: 80px;
+  height: 80px;
+}
+/* .progress-container {
+  width: 100%;
+} */
+
+/* .progress-bar::-webkit-progress-bar {
+  background-color: #d9d9d9;
+}
+
+.progress-bar::-webkit-progress-value {
+  background: #00a3ff;
+} */
+
+.progress-bar {
+  width: 100%;
+}
+
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  cursor: pointer;
+}
+
+input[type="range"]:focus {
+  outline: none;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  margin-top: -4px;
+  background-color: #a7a7a7;
+  height: 12px;
+  width: 12px;
+}
+
+#progressbar::-webkit-slider-runnable-track {
+  background: linear-gradient(to right, #00a3ff 0%, #d9d9d9 0%);
+  height: 5px;
+}
+
+#volume::-webkit-slider-runnable-track {
+  background: linear-gradient(to right, #00a3ff 100%, #d9d9d9 100%);
+  height: 5px;
+}
+
+.control-icons i {
+  font-size: 1.5rem;
+  margin: 0 5px 0 5px;
+  cursor: pointer;
+}
+.window-controls {
+  position: absolute;
+  top: 10px;
+  right: 20px;
+}
+.window-controls i {
+  margin-left: 5px;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+.current-time {
+  text-align: center;
+  height: 10px;
+  margin-top: -10px;
+  margin-bottom: 10px;
+}
+
+@keyframes togglePlaylist {
+  0% {
+    height: 0px;
+  }
+  100% {
+    height: 296px;
+  }
+}
+
+.play-list:not(.d-none) {
+  width: 800px;
+  height: 296px;
+  border-radius: 5px;
+  background-color: #606060;
+  position: relative;
+  top: -15px;
+  z-index: -1;
+  animation: togglePlaylist 0.5s ease-in-out;
+}
+
+h5 {
+  font-size: 20px;
+  font-weight: bold;
+}
+
+p {
+  font-size: 13px;
+}
+
+h5,
+p,
+span,
+i,
+img {
+  text-shadow: 2px 2px 4px #1b1b1b;
+}
+
+/* .progress-container {
+  box-shadow: 0 2px 4px #1b1b1b;
+} */
