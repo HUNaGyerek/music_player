@@ -2,19 +2,20 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 mod utils;
 
-use tauri::Window;
+use tauri::{Manager, Window};
 use utils::{CLOSED_DIMENSIONS, OPENED_DIMENSIONS};
 
 #[tauri::command]
-fn toggle_settings_menu(window: Window) -> Result<(), tauri::Error> {
-    let window_size = window.inner_size().unwrap();
-    match window_size {
-        CLOSED_DIMENSIONS => window.set_size(tauri::Size::Logical(tauri::LogicalSize {
-            width: OPENED_DIMENSIONS.width as f64,
-            height: OPENED_DIMENSIONS.height as f64,
-        })),
-        _ => Ok(()),
-    }?;
+async fn create_settings(handle: tauri::AppHandle) -> Result<(), tauri::Error> {
+    let _ = tauri::WindowBuilder::new(
+        &handle,
+        "settings",
+        tauri::WindowUrl::App("settings.html".into()),
+    )
+    .decorations(false)
+    .resizable(false)
+    .transparent(true)
+    .build()?;
     Ok(())
 }
 
@@ -36,10 +37,16 @@ fn resize_window(window: Window) -> Result<(), tauri::Error> {
 
 fn main() {
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![
-            toggle_settings_menu,
-            resize_window
-        ])
+        .on_window_event(|event| match event.event() {
+            tauri::WindowEvent::Destroyed => {
+                let window = event.window();
+                if window.label() == "main" {
+                    let _ = window.app_handle().exit(256);
+                }
+            }
+            _ => {}
+        })
+        .invoke_handler(tauri::generate_handler![create_settings, resize_window])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

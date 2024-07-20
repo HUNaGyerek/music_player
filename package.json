@@ -1,0 +1,15 @@
+{
+  "devDependencies": {
+    "tailwindcss": "^3.4.6"
+  },
+  "scripts": {
+    "start": "npm-run-all --parallel build:css:index build:css:settings",
+    "start_tauri": "npm-run-all --parallel build:css:index build:css:settings tauri:run",
+    "build:css:index": "tailwindcss -i ./src/indexStyles.css -o ./src/tailwind-output/indexOutput.css --watch",
+    "build:css:settings": "tailwindcss -i ./src/settingsStyles.css -o ./src/tailwind-output/settingsOutput.css --watch",
+    "tauri:run": "cargo tauri dev"
+  },
+  "dependencies": {
+    "npm-run-all": "^4.1.5"
+  }
+}

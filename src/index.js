@@ -4,8 +4,7 @@ const { appWindow } = window.__TAURI__.window;
 window.onload = () => {
 	document.getElementById("settings").addEventListener("click", async (e) => {
 		e.preventDefault();
-		await invoke("toggle_settings_menu");
-		window.location.href = "settings.html";
+		await invoke("create_settings");
 	});
 
 	document.getElementById("minimize").addEventListener("click", (e) => {

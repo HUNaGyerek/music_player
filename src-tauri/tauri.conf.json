@@ -25,7 +25,6 @@
       {
         "label": "main",
         "title": "Music Player",
-        "url": "index.html",
         "width": 800,
         "height": 200,
         "resizable": false,
