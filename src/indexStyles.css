@@ -1,6 +1,11 @@
 /* @import url("https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"); */
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap");
 
+:root {
+	--volume-bar-value: 100%;
+	--progress-bar-value: 0%;
+}
+
 * {
 	font-family: "Inter", sans-serif;
 	font-style: normal;
@@ -28,7 +33,7 @@ body {
 	height: 80px;
 }
 
-.progress-bar {
+.progressBar {
 	width: 100%;
 }
 
@@ -48,12 +53,12 @@ input[type="range"]::-webkit-slider-thumb {
 	height: 12px;
 	width: 12px;
 }
-#progressBar::-webkit-slider-runnable-track {
-	background: linear-gradient(to right, #00a3ff 0%, #d9d9d9 0%);
+#progress-bar::-webkit-slider-runnable-track {
+	background: linear-gradient(to right, #00a3ff var(--progress-bar-value), #d9d9d9 var(--progress-bar-value));
 	height: 5px;
 }
-#volumeBar::-webkit-slider-runnable-track {
-	background: linear-gradient(to right, #00a3ff 100%, #d9d9d9 100%);
+#volume-bar::-webkit-slider-runnable-track {
+	background: linear-gradient(to right, #00a3ff var(--volume-bar-value), #d9d9d9 var(--volume-bar-value));
 	height: 5px;
 }
 
