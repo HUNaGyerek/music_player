@@ -31,10 +31,16 @@ function resumeAudio() {
 
 const nextTrack = () => {
 	getElement("#next-track").onclick = async () => {
-		const nextTrackIndex = (await getCurrentMusicIndex()) + 1;
-		const nextMusicLenght = invoke("get_audio_length", {
-			filePath: nextTrackIndex,
-		});
+		let nextTrackIndex = await getCurrentMusicIndex();
+		if ((await getCurrentMusicIndex()) + 1 != musicList.length) {
+			nextTrackIndex = (await getCurrentMusicIndex()) + 1;
+		}
+
+		getElement("#volume-bar").value = (await getVolume()) * 100;
+
+		changeLinearGradient("volume-bar", (await getVolume()) * 100);
+		const nextMusicLenght = await getAudioLenght(nextTrackIndex);
+		setMaxMinuteText(nextMusicLenght);
 		invoke("next_track").catch((error) => {
 			console.error("Error playing next track:", error);
 		});
@@ -42,10 +48,15 @@ const nextTrack = () => {
 };
 const previousTrack = () => {
 	getElement("#previous-track").onclick = async () => {
-		const previousTrackIndex = (await getCurrentMusicIndex()) - 1;
-		const previousMusicLenght = invoke("get_audio_length", {
-			filePath: previousTrackTrackIndex,
-		});
+		let previousTrackIndex = await getCurrentMusicIndex();
+		if ((await getCurrentMusicIndex()) - 1 >= 0) {
+			previousTrackIndex = (await getCurrentMusicIndex()) - 1;
+		}
+
+		getElement("#volume-bar").value = await getVolume();
+		changeLinearGradient("volume-bar", await getVolume());
+		const previousMusicLenght = await getAudioLenght(previousTrackIndex);
+		setMaxMinuteText(previousMusicLenght);
 		invoke("previous_track").catch((error) => {
 			console.error("Error playing next track:", error);
 		});
@@ -62,14 +73,17 @@ const volumeInitialize = () => {
 	toggleMuteButton();
 };
 
-const getAudioLenght = (audio) => {
-	return invoke("get_audio_length", { filePath: audio });
+const getAudioLenght = (musicIndex) => {
+	return invoke("get_audio_length", { musicIndex: musicIndex });
 };
 
 const getCurrentMusicIndex = () => {
 	return invoke("get_current_music_index");
 };
 
+const getVolume = () => {
+	return invoke("get_volume");
+};
 const setVolume = () => {
 	$("#volume-bar").on("input", (e) => {
 		invoke("set_volume", { volume: +e.target.value / 100 }).catch((error) => {
@@ -193,7 +207,7 @@ const mergeProgressBarWithMusic = () => {
 
 	setInterval(async () => {
 		const currentTime = await getCurrentPosition();
-		console.log(currentTime);
+		// console.log(currentTime);
 
 		setCurrentMinuteText(convertSecondsToMinuteText(currentTime));
 		changeLinearGradient(
@@ -224,20 +238,14 @@ const mergeProgressBarWithMusic = () => {
 // 	};
 // };
 
-const setMaxMinuteText = async () => {
+const setMaxMinuteText = async (music_length) => {
 	let maxValue = getElement("#musicMaxMinute");
-	maxValue.textContent = convertSecondsToMinuteText(
-		await getAudioLenght(
-			"..\\src-tauri\\songs\\DESH - APÁLY (Official Music Video) [AnqYO0TCSG8].mp3"
-		)
-	);
+	maxValue.textContent = convertSecondsToMinuteText(music_length);
 };
 
-const setProgressbarValueToMusicMinutes = async () => {
+const setProgressbarValueToMusicMinutes = async (musicIndex) => {
 	const progressBar = getElement("#progress-bar");
-	const musicMaxValue = await getAudioLenght(
-		"..\\src-tauri\\songs\\DESH - APÁLY (Official Music Video) [AnqYO0TCSG8].mp3"
-	);
+	const musicMaxValue = await getAudioLenght(musicIndex);
 	progressBar.max = musicMaxValue;
 };
 
@@ -254,7 +262,7 @@ const convertSecondsToMinuteText = (seconds) => {
 const convertMinuteTextToSeconds = (time) =>
 	time.split(":").reduce((s, t) => s * 60 + +t, 0);
 
-window.onload = () => {
+window.onload = async () => {
 	document.getElementById("settings").addEventListener("click", async (e) => {
 		e.preventDefault();
 		await invoke("create_settings");
@@ -270,7 +278,7 @@ window.onload = () => {
 		appWindow.close();
 	});
 
-	setProgressbarValueToMusicMinutes();
+	setProgressbarValueToMusicMinutes(0);
 	refreshProgressbarStyle("#volume-bar");
 	refreshProgressbarStyle("#progress-bar");
 	togglePlaylistMenu();
@@ -278,7 +286,7 @@ window.onload = () => {
 	previousTrack();
 	// startTimer();
 	mergeProgressBarWithMusic();
-	setMaxMinuteText();
+	setMaxMinuteText(await getAudioLenght(await getCurrentMusicIndex()));
 	refreshCurrentTimeValueToText();
 	volumeInitialize();
 	togglePlayButton();

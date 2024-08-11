@@ -73,14 +73,21 @@ fn resume_audio(state: tauri::State<'_, Arc<Mutex<AudioPlayer>>>) {
 }
 
 #[tauri::command]
-fn set_volume(volume: f32, state: tauri::State<'_, Arc<Mutex<AudioPlayer>>>) {
+fn get_volume(state: tauri::State<'_, Arc<Mutex<AudioPlayer>>>) -> Option<f32> {
     let audio_player = state.lock().unwrap();
+    audio_player.get_volume()
+}
+
+#[tauri::command]
+fn set_volume(volume: f32, state: tauri::State<'_, Arc<Mutex<AudioPlayer>>>) {
+    let mut audio_player = state.lock().unwrap();
     audio_player.set_volume(volume);
 }
 
 #[tauri::command]
-fn get_audio_length(file_path: String) -> u64 {
-    AudioPlayer::get_audio_length(&file_path)
+fn get_audio_length(music_index: usize, state: tauri::State<'_, Arc<Mutex<AudioPlayer>>>) -> u64 {
+    let audio_player = state.lock().unwrap();
+    audio_player.get_audio_length(music_index)
 }
 
 #[tauri::command]
@@ -119,6 +126,7 @@ fn main() {
             resume_audio,
             next_track,
             previous_track,
+            get_volume,
             set_volume,
             get_audio_length,
             get_current_position,

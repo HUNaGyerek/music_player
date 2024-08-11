@@ -32,7 +32,7 @@ impl AudioPlayer {
             stream: None,
             stream_handle: None,
             sink: None,
-            volume: 0.5,
+            volume: 0.2,
             start_time: None,
             paused_position: None,
             playlist: Vec::new(),
@@ -44,8 +44,6 @@ impl AudioPlayer {
     pub fn initialize(&mut self) {
         let (stream, stream_handle) = OutputStream::try_default().unwrap();
         let sink = Sink::try_new(&stream_handle).unwrap();
-        sink.set_volume(self.volume);
-        println!("{}", sink.volume());
         self.stream = Some(stream);
         self.stream_handle = Some(stream_handle);
         self.sink = Some(Arc::new(Mutex::new(sink)));
@@ -63,6 +61,7 @@ impl AudioPlayer {
             sink.lock().unwrap().stop();
             let new_sink = Sink::try_new(self.stream_handle.as_ref().unwrap()).unwrap();
             *self.sink.as_ref().unwrap().lock().unwrap() = new_sink;
+            sink.lock().unwrap().set_volume(self.volume);
 
             if self.current_index < self.playlist.len() {
                 let file_path = &self.playlist[self.current_index];
@@ -114,14 +113,19 @@ impl AudioPlayer {
         }
     }
 
-    pub fn set_volume(&self, volume: f32) {
+    pub fn get_volume(&self) -> Option<f32> {
+        Some(self.volume)
+    }
+
+    pub fn set_volume(&mut self, volume: f32) {
         if let Some(sink) = &self.sink {
+            self.volume = volume;
             sink.lock().unwrap().set_volume(volume);
         }
     }
 
-    pub fn get_audio_length(file_path: &str) -> u64 {
-        let src = File::open(file_path).unwrap();
+    pub fn get_audio_length(&self, audio_index: usize) -> u64 {
+        let src = File::open(self.playlist[audio_index].clone()).unwrap();
         let mss = MediaSourceStream::new(Box::new(src), Default::default());
         let hint = Hint::new();
 
