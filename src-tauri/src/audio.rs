@@ -1,12 +1,9 @@
-use rodio::{OutputStream, OutputStreamHandle, Sink};
+use rodio::{source::Source, Decoder, OutputStream, OutputStreamHandle, Sink};
 use std::fs::File;
 use std::io::BufReader;
-use std::sync::Arc;
-use std::sync::Mutex;
-
-use rodio::{Decoder, Source};
-
+use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
+
 use symphonia::core::formats::FormatOptions;
 use symphonia::core::io::MediaSourceStream;
 use symphonia::core::meta::MetadataOptions;
@@ -32,7 +29,7 @@ impl AudioPlayer {
             stream: None,
             stream_handle: None,
             sink: None,
-            volume: 0.2,
+            volume: 0.1,
             start_time: None,
             paused_position: None,
             playlist: Vec::new(),
@@ -44,6 +41,7 @@ impl AudioPlayer {
     pub fn initialize(&mut self) {
         let (stream, stream_handle) = OutputStream::try_default().unwrap();
         let sink = Sink::try_new(&stream_handle).unwrap();
+        sink.set_volume(self.volume);
         self.stream = Some(stream);
         self.stream_handle = Some(stream_handle);
         self.sink = Some(Arc::new(Mutex::new(sink)));
@@ -57,18 +55,13 @@ impl AudioPlayer {
 
     pub fn play_current_track(&mut self) {
         if let Some(sink) = &self.sink {
-            // Stop the current sink and create a new one
             sink.lock().unwrap().stop();
-            let new_sink = Sink::try_new(self.stream_handle.as_ref().unwrap()).unwrap();
-            *self.sink.as_ref().unwrap().lock().unwrap() = new_sink;
-            sink.lock().unwrap().set_volume(self.volume);
-
             if self.current_index < self.playlist.len() {
                 let file_path = &self.playlist[self.current_index];
                 let file = File::open(file_path).unwrap();
                 let source = Decoder::new(BufReader::new(file)).unwrap();
                 self.track_duration = Some(source.total_duration().unwrap_or(Duration::ZERO));
-                self.sink.as_ref().unwrap().lock().unwrap().append(source);
+                sink.lock().unwrap().append(source);
 
                 self.start_time = Some(Instant::now());
                 self.paused_position = None;
@@ -79,7 +72,6 @@ impl AudioPlayer {
     pub fn next_track(&mut self) {
         if self.current_index + 1 < self.playlist.len() {
             self.current_index += 1;
-            println!("{:?}", self.playlist[self.current_index]);
             self.play_current_track();
         }
     }
@@ -87,7 +79,6 @@ impl AudioPlayer {
     pub fn previous_track(&mut self) {
         if self.current_index > 0 {
             self.current_index -= 1;
-            println!("{:?}", self.playlist[self.current_index]);
             self.play_current_track();
         }
     }
@@ -114,7 +105,7 @@ impl AudioPlayer {
     }
 
     pub fn get_volume(&self) -> Option<f32> {
-        Some(self.volume)
+        Some(self.volume * 100f32)
     }
 
     pub fn set_volume(&mut self, volume: f32) {
@@ -173,6 +164,23 @@ impl AudioPlayer {
 
     pub fn get_current_music_index(&self) -> usize {
         self.current_index
+    }
+
+    pub fn set_current_time(&mut self, position: u64) {
+        if let Some(sink) = &self.sink {
+            if self.current_index < self.playlist.len() {
+                sink.lock().unwrap().stop();
+
+                let file_path = &self.playlist[self.current_index];
+                let file = File::open(file_path).unwrap();
+                let source = Decoder::new(BufReader::new(file)).unwrap();
+                let source = source.skip_duration(Duration::from_secs(position));
+                sink.lock().unwrap().append(source);
+
+                self.start_time = Some(Instant::now() - Duration::from_secs(position));
+                self.paused_position = None;
+            }
+        }
     }
 }
 

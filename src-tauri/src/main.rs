@@ -103,20 +103,26 @@ fn get_current_music_index(state: tauri::State<'_, Arc<Mutex<AudioPlayer>>>) -> 
     audio_player.get_current_music_index()
 }
 
+#[tauri::command]
+fn set_current_time(position: u64, state: tauri::State<'_, Arc<Mutex<AudioPlayer>>>) {
+    let mut audio_player = state.lock().unwrap();
+    audio_player.set_current_time(position);
+}
+
 fn main() {
     let audio_player = Arc::new(Mutex::new(AudioPlayer::new()));
     audio_player.lock().unwrap().initialize();
 
     tauri::Builder::default()
         .manage(audio_player)
-        .on_window_event(|event| match event.event() {
-            tauri::WindowEvent::Destroyed => {
+        .on_window_event(|event| {
+            if let tauri::WindowEvent::Destroyed = event.event() {
                 let window = event.window();
                 if window.label() == "main" {
-                    let _ = window.app_handle().exit(256);
+                    // audio_player.lock().unwrap().stop_audio();
+                    window.app_handle().exit(256);
                 }
             }
-            _ => {}
         })
         .invoke_handler(tauri::generate_handler![
             create_settings,
@@ -131,6 +137,7 @@ fn main() {
             get_audio_length,
             get_current_position,
             get_current_music_index,
+            set_current_time,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
