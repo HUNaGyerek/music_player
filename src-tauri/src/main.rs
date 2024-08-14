@@ -4,8 +4,7 @@ mod audio;
 mod utils;
 
 use audio::AudioPlayer;
-use std::sync::Arc;
-use std::sync::Mutex;
+use std::sync::{Arc, Mutex};
 
 use tauri::{Manager, Window};
 use utils::{CLOSED_DIMENSIONS, OPENED_DIMENSIONS};
@@ -85,7 +84,10 @@ fn set_volume(volume: f32, state: tauri::State<'_, Arc<Mutex<AudioPlayer>>>) {
 }
 
 #[tauri::command]
-fn get_audio_length(music_index: usize, state: tauri::State<'_, Arc<Mutex<AudioPlayer>>>) -> u64 {
+fn get_audio_length(
+    music_index: usize,
+    state: tauri::State<'_, Arc<Mutex<AudioPlayer>>>,
+) -> Option<u64> {
     let audio_player = state.lock().unwrap();
     audio_player.get_audio_length(music_index)
 }
@@ -111,7 +113,13 @@ fn set_current_time(position: u64, state: tauri::State<'_, Arc<Mutex<AudioPlayer
 
 fn main() {
     let audio_player = Arc::new(Mutex::new(AudioPlayer::new()));
-    audio_player.lock().unwrap().initialize();
+    // audio_player.lock().unwrap().initialize();
+
+    let args: Vec<String> = std::env::args().collect();
+    if args.len() > 1 {
+        let file_paths = args[1..].to_vec();
+        audio_player.lock().unwrap().play_playlist(file_paths);
+    }
 
     tauri::Builder::default()
         .manage(audio_player)

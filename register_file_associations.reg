@@ -1,0 +1,14 @@
+Windows Registry Editor Version 5.00
+
+[HKEY_CLASSES_ROOT\.mp3]
+@="Overtone.mp3"
+
+[HKEY_CLASSES_ROOT\Overtone.mp3]
+@="MP3 Audio File (Overtone)"
+
+[HKEY_CLASSES_ROOT\Overtone.mp3\shell\Open]
+@="Play"
+"MultiSelectModel"="Player"
+
+[HKEY_CLASSES_ROOT\Overtone.mp3\shell\Open\command]
+@="\"C:\\Program Files\\Overtone\\Overtone.exe\" \"%1\""

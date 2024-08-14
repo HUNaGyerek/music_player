@@ -3,12 +3,15 @@ use std::fs::File;
 use std::io::BufReader;
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
+use symphonia::core::audio;
 
 use symphonia::core::formats::FormatOptions;
 use symphonia::core::io::MediaSourceStream;
 use symphonia::core::meta::MetadataOptions;
 use symphonia::core::probe::Hint;
 use symphonia::default::get_probe;
+
+const DEFAULT_VALUE: f32 = 0.1;
 
 #[derive(Default)]
 pub struct AudioPlayer {
@@ -25,11 +28,14 @@ pub struct AudioPlayer {
 
 impl AudioPlayer {
     pub fn new() -> Self {
+        let (stream, stream_handle) = OutputStream::try_default().unwrap();
+        let sink = Sink::try_new(&stream_handle).unwrap();
+        sink.set_volume(DEFAULT_VALUE);
         Self {
-            stream: None,
-            stream_handle: None,
-            sink: None,
-            volume: 0.1,
+            stream: Some(stream),
+            stream_handle: Some(stream_handle),
+            sink: Some(Arc::new(Mutex::new(sink))),
+            volume: DEFAULT_VALUE,
             start_time: None,
             paused_position: None,
             playlist: Vec::new(),
@@ -38,14 +44,14 @@ impl AudioPlayer {
         }
     }
 
-    pub fn initialize(&mut self) {
-        let (stream, stream_handle) = OutputStream::try_default().unwrap();
-        let sink = Sink::try_new(&stream_handle).unwrap();
-        sink.set_volume(self.volume);
-        self.stream = Some(stream);
-        self.stream_handle = Some(stream_handle);
-        self.sink = Some(Arc::new(Mutex::new(sink)));
-    }
+    // pub fn initialize(&mut self) {
+    //     let (stream, stream_handle) = OutputStream::try_default().unwrap();
+    //     let sink = Sink::try_new(&stream_handle).unwrap();
+    //     sink.set_volume(self.volume);
+    //     self.stream = Some(stream);
+    //     self.stream_handle = Some(stream_handle);
+    //     self.sink = Some(Arc::new(Mutex::new(sink)));
+    // }
 
     pub fn play_playlist(&mut self, playlist: Vec<String>) {
         self.playlist = playlist;
@@ -115,40 +121,43 @@ impl AudioPlayer {
         }
     }
 
-    pub fn get_audio_length(&self, audio_index: usize) -> u64 {
-        let src = File::open(self.playlist[audio_index].clone()).unwrap();
-        let mss = MediaSourceStream::new(Box::new(src), Default::default());
-        let hint = Hint::new();
+    pub fn get_audio_length(&self, audio_index: usize) -> Option<u64> {
+        if audio_index < self.playlist.len() {
+            let src = File::open(self.playlist[audio_index].clone()).unwrap();
+            let mss = MediaSourceStream::new(Box::new(src), Default::default());
+            let hint = Hint::new();
 
-        let probed = get_probe()
-            .format(
-                &hint,
-                mss,
-                &FormatOptions::default(),
-                &MetadataOptions::default(),
-            )
-            .unwrap();
-
-        let format = probed.format;
-
-        let duration = format
-            .default_track()
-            .unwrap()
-            .codec_params
-            .time_base
-            .map(|time_base| {
-                time_base.calc_time(
-                    format
-                        .default_track()
-                        .unwrap()
-                        .codec_params
-                        .n_frames
-                        .unwrap(),
+            let probed = get_probe()
+                .format(
+                    &hint,
+                    mss,
+                    &FormatOptions::default(),
+                    &MetadataOptions::default(),
                 )
-            })
-            .unwrap();
+                .unwrap();
 
-        duration.seconds
+            let format = probed.format;
+
+            let duration = format
+                .default_track()
+                .unwrap()
+                .codec_params
+                .time_base
+                .map(|time_base| {
+                    time_base.calc_time(
+                        format
+                            .default_track()
+                            .unwrap()
+                            .codec_params
+                            .n_frames
+                            .unwrap(),
+                    )
+                })
+                .unwrap();
+
+            return Some(duration.seconds);
+        }
+        Some(1)
     }
 
     pub fn get_current_position(&self) -> Option<u64> {

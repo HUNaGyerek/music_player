@@ -1,23 +1,32 @@
 const { invoke } = window.__TAURI__.tauri;
 const { appWindow } = window.__TAURI__.window;
 
-const playList = [
-  ".\\songs\\DESH - APÁLY (Official Music Video) [AnqYO0TCSG8].mp3",
-  ".\\songs\\T. Danny - FURA VAGYOK (feat. Huzugha) (Official Music Video) [mltWrZ0nX0o].mp3",
-];
+// const playList = [
+//   ".\\songs\\DESH - APÁLY (Official Music Video) [AnqYO0TCSG8].mp3",
+//   ".\\songs\\T. Danny - FURA VAGYOK (feat. Huzugha) (Official Music Video) [mltWrZ0nX0o].mp3",
+// ];
 
 const getElement = (element) => document.querySelector(element);
 const getElements = (element) => document.querySelectorAll(element);
+const getPlaylistLen = () => playList.length;
 
-async function playPlaylist(filePath) {
-  invoke("play_playlist", { filePath }).catch((error) => {
-    console.error("Error playing audio:", error);
+// async function playPlaylist(filePath) {
+//   invoke("play_playlist", { filePath }).catch((error) => {
+//     console.error("Error playing audio:", error);
+//   });
+
+//   setProgressbarValueToMusicMinutes(await getCurrentMusicIndex());
+//   setMaxMinuteAndProgressBarValue(await getMusicLength());
+//   mergeProgressBarWithMusic();
+// }
+
+const openFolder = () => {
+  getElement("#shuffle-button").addEventListener("click", () => {
+    invoke("open_folder").catch((error) => {
+      console.error("Error opening folder:", error);
+    });
   });
-
-  setProgressbarValueToMusicMinutes(await getCurrentMusicIndex());
-  setMaxMinuteAndProgressBarValue(await getMusicLength());
-  mergeProgressBarWithMusic();
-}
+};
 
 const pauseAudio = () => {
   invoke("pause_audio").catch((error) => {
@@ -44,7 +53,7 @@ const setCurrentTime = () => {
 };
 
 const nextTrack = async () => {
-  if ((await getCurrentMusicIndex()) + 1 == playList.length) {
+  if ((await getCurrentMusicIndex()) + 1 == getPlaylistLen()) {
     return;
   }
 
@@ -317,5 +326,9 @@ window.onload = async () => {
   togglePlayButton();
   toggleFavourite();
 
-  playPlaylist(playList);
+  setProgressbarValueToMusicMinutes(await getCurrentMusicIndex());
+  setMaxMinuteAndProgressBarValue(await getMusicLength());
+  mergeProgressBarWithMusic();
+
+  // playPlaylist(playList);
 };
