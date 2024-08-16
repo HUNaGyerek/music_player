@@ -115,6 +115,10 @@ input[type="range"]::-webkit-slider-thumb {
 h5 {
   font-size: 20px;
   font-weight: bold;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: calc(800px - 30%);
 }
 
 p {

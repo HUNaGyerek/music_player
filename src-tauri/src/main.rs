@@ -39,11 +39,14 @@ fn resize_window(window: Window) -> Result<(), tauri::Error> {
     }
 }
 
-#[tauri::command]
-fn play_playlist(file_path: Vec<String>, state: tauri::State<'_, Arc<Mutex<AudioPlayer>>>) {
-    let mut audio_player = state.lock().unwrap();
-    audio_player.play_playlist(file_path);
-}
+// #[tauri::command]
+// fn play_playlist(
+//     file_path: Vec<std::path::PathBuf>,
+//     state: tauri::State<'_, Arc<Mutex<AudioPlayer>>>,
+// ) {
+//     let mut audio_player = state.lock().unwrap();
+//     audio_player.play_playlist(file_path, 0);
+// }
 
 #[tauri::command]
 fn next_track(state: tauri::State<'_, Arc<Mutex<AudioPlayer>>>) {
@@ -111,14 +114,44 @@ fn set_current_time(position: u64, state: tauri::State<'_, Arc<Mutex<AudioPlayer
     audio_player.set_current_time(position);
 }
 
+#[tauri::command]
+fn get_playlist_len(state: tauri::State<'_, Arc<Mutex<AudioPlayer>>>) -> usize {
+    let audio_player = state.lock().unwrap();
+    audio_player.get_playlist_len()
+}
+
+#[tauri::command]
+fn get_current_track_name(state: tauri::State<'_, Arc<Mutex<AudioPlayer>>>) -> String {
+    let audio_player = state.lock().unwrap();
+    audio_player.get_current_track_name().to_string()
+}
+
 fn main() {
     let audio_player = Arc::new(Mutex::new(AudioPlayer::new()));
     // audio_player.lock().unwrap().initialize();
 
-    let args: Vec<String> = std::env::args().collect();
+    let args: Vec<std::path::PathBuf> = std::env::args().map(std::path::PathBuf::from).collect();
+    let args: Vec<std::path::PathBuf> = vec![
+        std::path::PathBuf::from("asd"),
+        std::path::PathBuf::from("D:\\Zenek\\asd\\Pulserz - Driftveil City.mp3"),
+    ];
     if args.len() > 1 {
         let file_paths = args[1..].to_vec();
-        audio_player.lock().unwrap().play_playlist(file_paths);
+        let dir = std::path::Path::new(&file_paths[0]).parent().unwrap();
+        let mut entries = std::fs::read_dir(dir)
+            .unwrap()
+            .map(|res| res.map(|e| e.path()))
+            .collect::<Result<Vec<_>, std::io::Error>>()
+            .unwrap();
+        entries.sort();
+
+        let target = &args[1];
+        let position = entries.iter().position(|entry| entry == target);
+
+        audio_player
+            .lock()
+            .unwrap()
+            .play_playlist(entries, position.unwrap());
     }
 
     tauri::Builder::default()
@@ -135,7 +168,6 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             create_settings,
             resize_window,
-            play_playlist,
             pause_audio,
             resume_audio,
             next_track,
@@ -146,6 +178,8 @@ fn main() {
             get_current_position,
             get_current_music_index,
             set_current_time,
+            get_playlist_len,
+            get_current_track_name,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

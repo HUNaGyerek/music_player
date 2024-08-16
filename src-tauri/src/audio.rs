@@ -1,9 +1,9 @@
 use rodio::{source::Source, Decoder, OutputStream, OutputStreamHandle, Sink};
 use std::fs::File;
 use std::io::BufReader;
+use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
-use symphonia::core::audio;
 
 use symphonia::core::formats::FormatOptions;
 use symphonia::core::io::MediaSourceStream;
@@ -11,7 +11,7 @@ use symphonia::core::meta::MetadataOptions;
 use symphonia::core::probe::Hint;
 use symphonia::default::get_probe;
 
-const DEFAULT_VALUE: f32 = 0.1;
+const DEFAULT_VALUE: f32 = 0.03;
 
 #[derive(Default)]
 pub struct AudioPlayer {
@@ -21,7 +21,7 @@ pub struct AudioPlayer {
     volume: f32,
     start_time: Option<Instant>,
     paused_position: Option<Duration>,
-    playlist: Vec<String>,
+    playlist: Vec<PathBuf>,
     current_index: usize,
     track_duration: Option<Duration>,
 }
@@ -53,9 +53,9 @@ impl AudioPlayer {
     //     self.sink = Some(Arc::new(Mutex::new(sink)));
     // }
 
-    pub fn play_playlist(&mut self, playlist: Vec<String>) {
+    pub fn play_playlist(&mut self, playlist: Vec<PathBuf>, index_of_opened_track: usize) {
         self.playlist = playlist;
-        self.current_index = 0;
+        self.current_index = index_of_opened_track;
         self.play_current_track();
     }
 
@@ -65,12 +65,18 @@ impl AudioPlayer {
             if self.current_index < self.playlist.len() {
                 let file_path = &self.playlist[self.current_index];
                 let file = File::open(file_path).unwrap();
-                let source = Decoder::new(BufReader::new(file)).unwrap();
-                self.track_duration = Some(source.total_duration().unwrap_or(Duration::ZERO));
-                sink.lock().unwrap().append(source);
+                let source = Decoder::new(BufReader::new(file));
 
-                self.start_time = Some(Instant::now());
-                self.paused_position = None;
+                if let Ok(source) = source {
+                    self.track_duration = Some(source.total_duration().unwrap_or(Duration::ZERO));
+                    sink.lock().unwrap().append(source);
+
+                    self.start_time = Some(Instant::now());
+                    self.paused_position = None;
+                } else {
+                    println!("Failed to decode audio file: {:?}", file_path);
+                    self.next_track()
+                }
             }
         }
     }
@@ -127,35 +133,35 @@ impl AudioPlayer {
             let mss = MediaSourceStream::new(Box::new(src), Default::default());
             let hint = Hint::new();
 
-            let probed = get_probe()
-                .format(
-                    &hint,
-                    mss,
-                    &FormatOptions::default(),
-                    &MetadataOptions::default(),
-                )
-                .unwrap();
+            let probed = get_probe().format(
+                &hint,
+                mss,
+                &FormatOptions::default(),
+                &MetadataOptions::default(),
+            );
 
-            let format = probed.format;
+            if let Ok(probed) = probed {
+                let format = probed.format;
 
-            let duration = format
-                .default_track()
-                .unwrap()
-                .codec_params
-                .time_base
-                .map(|time_base| {
-                    time_base.calc_time(
-                        format
-                            .default_track()
-                            .unwrap()
-                            .codec_params
-                            .n_frames
-                            .unwrap(),
-                    )
-                })
-                .unwrap();
+                let duration = format
+                    .default_track()
+                    .unwrap()
+                    .codec_params
+                    .time_base
+                    .map(|time_base| {
+                        time_base.calc_time(
+                            format
+                                .default_track()
+                                .unwrap()
+                                .codec_params
+                                .n_frames
+                                .unwrap(),
+                        )
+                    })
+                    .unwrap();
 
-            return Some(duration.seconds);
+                return Some(duration.seconds);
+            }
         }
         Some(1)
     }
@@ -190,6 +196,19 @@ impl AudioPlayer {
                 self.paused_position = None;
             }
         }
+    }
+
+    pub fn get_playlist_len(&self) -> usize {
+        self.playlist.len()
+    }
+
+    pub fn get_current_track_name(&self) -> String {
+        self.playlist[self.current_index]
+            .file_stem()
+            .unwrap()
+            .to_str()
+            .unwrap()
+            .to_string()
     }
 }
 

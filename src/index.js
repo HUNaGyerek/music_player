@@ -1,33 +1,11 @@
 const { invoke } = window.__TAURI__.tauri;
 const { appWindow } = window.__TAURI__.window;
 
-// const playList = [
-//   ".\\songs\\DESH - APÁLY (Official Music Video) [AnqYO0TCSG8].mp3",
-//   ".\\songs\\T. Danny - FURA VAGYOK (feat. Huzugha) (Official Music Video) [mltWrZ0nX0o].mp3",
-// ];
-
 const getElement = (element) => document.querySelector(element);
 const getElements = (element) => document.querySelectorAll(element);
-const getPlaylistLen = () => playList.length;
+const getPlaylistLen = () => invoke("get_playlist_len");
 
-// async function playPlaylist(filePath) {
-//   invoke("play_playlist", { filePath }).catch((error) => {
-//     console.error("Error playing audio:", error);
-//   });
-
-//   setProgressbarValueToMusicMinutes(await getCurrentMusicIndex());
-//   setMaxMinuteAndProgressBarValue(await getMusicLength());
-//   mergeProgressBarWithMusic();
-// }
-
-const openFolder = () => {
-  getElement("#shuffle-button").addEventListener("click", () => {
-    invoke("open_folder").catch((error) => {
-      console.error("Error opening folder:", error);
-    });
-  });
-};
-
+// ***************************************** Logic ************************************************
 const pauseAudio = () => {
   invoke("pause_audio").catch((error) => {
     console.error("Error playing audio:", error);
@@ -40,18 +18,6 @@ function resumeAudio() {
   });
 }
 
-const setCurrentTime = () => {
-  let progressBar = getElement("#progress-bar");
-
-  progressBar.addEventListener("change", () => {
-    invoke("set_current_time", { position: +progressBar.value }).catch(
-      (error) => {
-        console.error("Error setting current time:", error);
-      }
-    );
-  });
-};
-
 const nextTrack = async () => {
   if ((await getCurrentMusicIndex()) + 1 == getPlaylistLen()) {
     return;
@@ -60,6 +26,8 @@ const nextTrack = async () => {
   invoke("next_track").catch((error) => {
     console.error("Error playing next track:", error);
   });
+
+  getElement("#music-name").textContent = await getCurrentMusicName();
   setMaxMinuteAndProgressBarValue(await getMusicLength());
   mergeProgressBarWithMusic();
 };
@@ -78,6 +46,8 @@ const previousTrack = async () => {
   invoke("previous_track").catch((error) => {
     console.error("Error playing next track:", error);
   });
+
+  getElement("#music-name").textContent = await getCurrentMusicName();
   setMaxMinuteAndProgressBarValue(await getMusicLength());
   mergeProgressBarWithMusic();
 };
@@ -87,16 +57,23 @@ const previousTrackButton = () => {
     previousTrack();
   };
 };
+// ************************************************************************************************
 
-const getCurrentPosition = () => {
-  return invoke("get_current_position");
-};
+// **************************************** UI Functions ******************************************
+const setCurrentTime = () => {
+  let progressBar = getElement("#progress-bar");
 
-const volumeInitialize = () => {
-  setVolume();
-  volumeButtonStates();
-  toggleMuteButton();
+  progressBar.addEventListener("change", () => {
+    invoke("set_current_time", { position: +progressBar.value }).catch(
+      (error) => {
+        console.error("Error setting current time:", error);
+      }
+    );
+  });
 };
+// ************************************************************************************************
+
+const getCurrentPosition = () => invoke("get_current_position");
 
 const getMusicLengthByIndex = (musicIndex) => {
   return invoke("get_audio_length", { musicIndex });
@@ -112,9 +89,16 @@ const getCurrentMusicIndex = () => {
   return invoke("get_current_music_index");
 };
 
-const getVolume = () => {
-  return invoke("get_volume");
+const getCurrentMusicName = () => invoke("get_current_track_name");
+
+const getVolume = () => invoke("get_volume");
+
+const volumeInitialize = () => {
+  setVolume();
+  volumeButtonStates();
+  toggleMuteButton();
 };
+
 const setVolume = () => {
   $("#volume-bar").on("input", (e) => {
     invoke("set_volume", { volume: +e.target.value / 100 }).catch((error) => {
@@ -183,17 +167,15 @@ const toggleFavourite = () => {
 
 const togglePlayButton = () => {
   const playButton = getElement("#play-button");
-
   playButton.addEventListener("click", async () => {
     if (playButton.classList.contains("bi-play-fill")) {
-      // audioElement.play();
       resumeAudio();
-      // startTimer();
+
       playButton.classList.remove("bi-play-fill");
       playButton.classList.add("bi-pause-fill");
     } else {
-      // audioElement.pause();
       pauseAudio();
+
       playButton.classList.remove("bi-pause-fill");
       playButton.classList.add("bi-play-fill");
     }
@@ -232,12 +214,13 @@ const refreshCurrentTimeValueToText = () => {
 const mergeProgressBarWithMusic = () => {
   const progressBar = getElement("#progress-bar");
 
-  let id = setInterval(loop, 500);
   async function loop() {
     const currentTime = await getCurrentPosition();
+    console.log(currentTime);
 
     if (currentTime == (await getMusicLength())) {
       clearInterval(id);
+      console.log("aaa");
       nextTrack();
     }
 
@@ -252,25 +235,8 @@ const mergeProgressBarWithMusic = () => {
     );
     progressBar.value = currentTime;
   }
+  let id = setInterval(loop, 100);
 };
-
-// const startTimer = () => {
-// 	var timer = parseInt(getElement("#progress-bar").value, 10);
-// 	let asd = setInterval(() => {
-// 		timer += 1;
-// 		getElement("#progress-bar").value = timer;
-
-// 		changeLinearGradient(
-// 			"progress-bar",
-// 			timer /
-// 				(convertMinuteTextToSeconds(getElement("#musicMaxMinute").textContent) /
-// 					100)
-// 		);
-// 	}, 1000);
-// 	getElement("#play-button").onclick = () => {
-// 		clearTimeout(asd);
-// 	};
-// };
 
 const setMaxMinuteAndProgressBarValue = async (music_length) => {
   let maxValue = getElement("#music-max-minute");
