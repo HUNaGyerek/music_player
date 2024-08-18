@@ -2,7 +2,6 @@
   "build": {
     "devPath": "../src",
     "distDir": "../src",
-    "beforeBundleCommand": "powershell -ExecutionPolicy Bypass -File register_file_associations.ps1",
     "withGlobalTauri": true
   },
   "package": {
@@ -48,7 +47,13 @@
         "icons/icon.ico"
       ],
       "resources": [],
-			"externalBin": []
+			"externalBin": [],
+      "windows": {
+        "wix": {
+          "fragmentPaths": ["./wix/RegistryEntries.wxs"],
+          "componentGroupRefs": ["OvertoneRegistryEntries"]
+        }
+      }
     }
   }
 }

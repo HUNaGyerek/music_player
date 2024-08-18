@@ -121,9 +121,13 @@ fn get_playlist_len(state: tauri::State<'_, Arc<Mutex<AudioPlayer>>>) -> usize {
 }
 
 #[tauri::command]
-fn get_current_track_name(state: tauri::State<'_, Arc<Mutex<AudioPlayer>>>) -> String {
+fn get_current_track_name(state: tauri::State<'_, Arc<Mutex<AudioPlayer>>>) -> Option<String> {
     let audio_player = state.lock().unwrap();
-    audio_player.get_current_track_name().to_string()
+    if audio_player.get_playlist_len() != 0 {
+        Some(audio_player.get_current_track_name())
+    } else {
+        None
+    }
 }
 
 fn main() {
@@ -133,7 +137,9 @@ fn main() {
     let args: Vec<std::path::PathBuf> = std::env::args().map(std::path::PathBuf::from).collect();
     let args: Vec<std::path::PathBuf> = vec![
         std::path::PathBuf::from("asd"),
-        std::path::PathBuf::from("D:\\Zenek\\asd\\Pulserz - Driftveil City.mp3"),
+        std::path::PathBuf::from(
+            "C:\\Users\\Vivi-PC\\Music\\DESH - APÁLY (Official Music Video) [AnqYO0TCSG8].mp3",
+        ),
     ];
     if args.len() > 1 {
         let file_paths = args[1..].to_vec();

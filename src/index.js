@@ -7,86 +7,86 @@ const getPlaylistLen = () => invoke("get_playlist_len");
 
 // ***************************************** Logic ************************************************
 const pauseAudio = () => {
-  invoke("pause_audio").catch((error) => {
-    console.error("Error playing audio:", error);
-  });
+	invoke("pause_audio").catch((error) => {
+		console.error("Error playing audio:", error);
+	});
 };
 
 function resumeAudio() {
-  invoke("resume_audio").catch((error) => {
-    console.error("Error playing audio:", error);
-  });
+	invoke("resume_audio").catch((error) => {
+		console.error("Error playing audio:", error);
+	});
 }
 
 const nextTrack = async () => {
-  if ((await getCurrentMusicIndex()) + 1 == getPlaylistLen()) {
-    return;
-  }
+	if ((await getCurrentMusicIndex()) + 1 == getPlaylistLen()) {
+		return;
+	}
 
-  invoke("next_track").catch((error) => {
-    console.error("Error playing next track:", error);
-  });
+	invoke("next_track").catch((error) => {
+		console.error("Error playing next track:", error);
+	});
 
-  getElement("#music-name").textContent = await getCurrentMusicName();
-  setMaxMinuteAndProgressBarValue(await getMusicLength());
-  mergeProgressBarWithMusic();
+	getElement("#music-name").textContent = await getCurrentMusicName();
+	setMaxMinuteAndProgressBarValue(await getMusicLength());
+	mergeProgressBarWithMusic();
 };
 
 const nextTrackButton = () => {
-  getElement("#next-track").onclick = async () => {
-    nextTrack();
-  };
+	getElement("#next-track").onclick = async () => {
+		nextTrack();
+	};
 };
 
 const previousTrack = async () => {
-  if ((await getCurrentMusicIndex()) - 1 < 0) {
-    return;
-  }
+	if ((await getCurrentMusicIndex()) - 1 < 0) {
+		return;
+	}
 
-  invoke("previous_track").catch((error) => {
-    console.error("Error playing next track:", error);
-  });
+	invoke("previous_track").catch((error) => {
+		console.error("Error playing next track:", error);
+	});
 
-  getElement("#music-name").textContent = await getCurrentMusicName();
-  setMaxMinuteAndProgressBarValue(await getMusicLength());
-  mergeProgressBarWithMusic();
+	getElement("#music-name").textContent = await getCurrentMusicName();
+	setMaxMinuteAndProgressBarValue(await getMusicLength());
+	mergeProgressBarWithMusic();
 };
 
 const previousTrackButton = () => {
-  getElement("#previous-track").onclick = () => {
-    previousTrack();
-  };
+	getElement("#previous-track").onclick = () => {
+		previousTrack();
+	};
 };
 // ************************************************************************************************
 
 // **************************************** UI Functions ******************************************
 const setCurrentTime = () => {
-  let progressBar = getElement("#progress-bar");
+	let progressBar = getElement("#progress-bar");
 
-  progressBar.addEventListener("change", () => {
-    invoke("set_current_time", { position: +progressBar.value }).catch(
-      (error) => {
-        console.error("Error setting current time:", error);
-      }
-    );
-  });
+	progressBar.addEventListener("change", () => {
+		invoke("set_current_time", { position: +progressBar.value }).catch(
+			(error) => {
+				console.error("Error setting current time:", error);
+			}
+		);
+	});
 };
 // ************************************************************************************************
 
 const getCurrentPosition = () => invoke("get_current_position");
 
 const getMusicLengthByIndex = (musicIndex) => {
-  return invoke("get_audio_length", { musicIndex });
+	return invoke("get_audio_length", { musicIndex });
 };
 
 const getMusicLength = async () => {
-  return invoke("get_audio_length", {
-    musicIndex: await getCurrentMusicIndex(),
-  });
+	return invoke("get_audio_length", {
+		musicIndex: await getCurrentMusicIndex(),
+	});
 };
 
 const getCurrentMusicIndex = () => {
-  return invoke("get_current_music_index");
+	return invoke("get_current_music_index");
 };
 
 const getCurrentMusicName = () => invoke("get_current_track_name");
@@ -94,207 +94,208 @@ const getCurrentMusicName = () => invoke("get_current_track_name");
 const getVolume = () => invoke("get_volume");
 
 const volumeInitialize = () => {
-  setVolume();
-  volumeButtonStates();
-  toggleMuteButton();
+	setVolume();
+	volumeButtonStates();
+	toggleMuteButton();
 };
 
 const setVolume = () => {
-  $("#volume-bar").on("input", (e) => {
-    invoke("set_volume", { volume: +e.target.value / 100 }).catch((error) => {
-      console.error("Error setting volume:", error);
-    });
-  });
+	$("#volume-bar").on("input", (e) => {
+		invoke("set_volume", { volume: +e.target.value / 100 }).catch((error) => {
+			console.error("Error setting volume:", error);
+		});
+	});
 };
 
 const volumeButtonStates = () => {
-  const muteButton = getElement("#mute-button");
+	const muteButton = getElement("#mute-button");
 
-  $("#volume-bar").on("input", (e) => {
-    if (e.target.value < 100 && e.target.value > 75) {
-      muteButton.classList.add("bi-volume-up-fill");
-      muteButton.classList.remove("bi-volume-down-fill");
-      muteButton.classList.remove("bi-volume-off-fill");
-      muteButton.classList.remove("bi-volume-mute-fill");
-    } else if (e.target.value >= 25 && e.target.value <= 75) {
-      muteButton.classList.remove("bi-volume-up-fill");
-      muteButton.classList.add("bi-volume-down-fill");
-      muteButton.classList.remove("bi-volume-off-fill");
-      muteButton.classList.remove("bi-volume-mute-fill");
-    } else if (e.target.value > 0 && e.target.value < 25) {
-      muteButton.classList.remove("bi-volume-up-fill");
-      muteButton.classList.remove("bi-volume-down-fill");
-      muteButton.classList.add("bi-volume-off-fill");
-      muteButton.classList.remove("bi-volume-mute-fill");
-    }
-  });
+	$("#volume-bar").on("input", (e) => {
+		if (e.target.value < 100 && e.target.value > 75) {
+			muteButton.classList.add("bi-volume-up-fill");
+			muteButton.classList.remove("bi-volume-down-fill");
+			muteButton.classList.remove("bi-volume-off-fill");
+			muteButton.classList.remove("bi-volume-mute-fill");
+		} else if (e.target.value >= 25 && e.target.value <= 75) {
+			muteButton.classList.remove("bi-volume-up-fill");
+			muteButton.classList.add("bi-volume-down-fill");
+			muteButton.classList.remove("bi-volume-off-fill");
+			muteButton.classList.remove("bi-volume-mute-fill");
+		} else if (e.target.value > 0 && e.target.value < 25) {
+			muteButton.classList.remove("bi-volume-up-fill");
+			muteButton.classList.remove("bi-volume-down-fill");
+			muteButton.classList.add("bi-volume-off-fill");
+			muteButton.classList.remove("bi-volume-mute-fill");
+		}
+	});
 };
 
 const toggleMuteButton = () => {
-  const muteButton = getElement("#mute-button");
+	const muteButton = getElement("#mute-button");
 
-  // If the volume is changed then change back the icon to unmuted state
-  muteButton.addEventListener("click", (e) => {
-    const volumeBar = getElement("#volume-bar");
+	// If the volume is changed then change back the icon to unmuted state
+	muteButton.addEventListener("click", (e) => {
+		const volumeBar = getElement("#volume-bar");
 
-    if (volumeBar.value == 0) {
-      // Change value, and refresh the css to it
-      volumeBar.value = 100;
-      changeLinearGradient(volumeBar.id, volumeBar.value);
+		if (volumeBar.value == 0) {
+			// Change value, and refresh the css to it
+			volumeBar.value = 100;
+			changeLinearGradient(volumeBar.id, volumeBar.value);
 
-      // Change icons
-      muteButton.classList.add("bi-volume-up-fill");
-      muteButton.classList.remove("bi-volume-mute-fill");
-    } else {
-      // Change value, and refresh the css to it
-      volumeBar.value = 0;
-      changeLinearGradient(volumeBar.id, volumeBar.value);
+			// Change icons
+			muteButton.classList.add("bi-volume-up-fill");
+			muteButton.classList.remove("bi-volume-mute-fill");
+		} else {
+			// Change value, and refresh the css to it
+			volumeBar.value = 0;
+			changeLinearGradient(volumeBar.id, volumeBar.value);
 
-      // Change icons
-      muteButton.classList.add("bi-volume-mute-fill");
-      muteButton.classList.remove("bi-volume-up-fill");
-    }
-  });
+			// Change icons
+			muteButton.classList.add("bi-volume-mute-fill");
+			muteButton.classList.remove("bi-volume-up-fill");
+		}
+	});
 };
 
 const toggleFavourite = () => {
-  const favouriteButton = getElement("#favourite-button");
-  favouriteButton.addEventListener("click", (e) => {
-    favouriteButton.classList.toggle("bi-heart");
-    favouriteButton.classList.toggle("bi-heart-fill");
-  });
+	const favouriteButton = getElement("#favourite-button");
+	favouriteButton.addEventListener("click", (e) => {
+		favouriteButton.classList.toggle("bi-heart");
+		favouriteButton.classList.toggle("bi-heart-fill");
+	});
 };
 
 const togglePlayButton = () => {
-  const playButton = getElement("#play-button");
-  playButton.addEventListener("click", async () => {
-    if (playButton.classList.contains("bi-play-fill")) {
-      resumeAudio();
+	const playButton = getElement("#play-button");
+	playButton.addEventListener("click", async () => {
+		if (playButton.classList.contains("bi-play-fill")) {
+			resumeAudio();
 
-      playButton.classList.remove("bi-play-fill");
-      playButton.classList.add("bi-pause-fill");
-    } else {
-      pauseAudio();
+			playButton.classList.remove("bi-play-fill");
+			playButton.classList.add("bi-pause-fill");
+		} else {
+			pauseAudio();
 
-      playButton.classList.remove("bi-pause-fill");
-      playButton.classList.add("bi-play-fill");
-    }
-  });
+			playButton.classList.remove("bi-pause-fill");
+			playButton.classList.add("bi-play-fill");
+		}
+	});
 };
 
 const togglePlaylistMenu = () => {
-  document
-    .getElementById("playlistButton")
-    .addEventListener("click", async (event) => {
-      event.preventDefault();
-      const menuVisibility = getElement(".play-list");
-      menuVisibility.classList.toggle("d-none");
+	document
+		.getElementById("playlistButton")
+		.addEventListener("click", async (event) => {
+			event.preventDefault();
+			const menuVisibility = getElement(".play-list");
+			menuVisibility.classList.toggle("d-none");
 
-      await invoke("resize_window");
-    });
+			await invoke("resize_window");
+		});
 };
 
 const refreshProgressbarStyle = (element) => {
-  $(element).on("input", (e) => {
-    changeLinearGradient(e.target.id, e.target.value / (e.target.max / 100));
-  });
+	$(element).on("input", (e) => {
+		changeLinearGradient(e.target.id, e.target.value / (e.target.max / 100));
+	});
 };
 
 const changeLinearGradient = (elementId, value) => {
-  $(":root").css(`--${elementId}-value`, `${value}%`);
+	$(":root").css(`--${elementId}-value`, `${value}%`);
 };
 
 const refreshCurrentTimeValueToText = () => {
-  const progressBar = getElement("#progress-bar");
-  progressBar.addEventListener("input", (e) => {
-    setCurrentMinuteText(convertSecondsToMinuteText(e.target.value));
-  });
+	const progressBar = getElement("#progress-bar");
+	progressBar.addEventListener("input", (e) => {
+		setCurrentMinuteText(convertSecondsToMinuteText(e.target.value));
+	});
 };
 
 const mergeProgressBarWithMusic = () => {
-  const progressBar = getElement("#progress-bar");
+	const progressBar = getElement("#progress-bar");
 
-  async function loop() {
-    const currentTime = await getCurrentPosition();
-    console.log(currentTime);
+	async function loop() {
+		const currentTime = await getCurrentPosition();
+		console.log(currentTime);
 
-    if (currentTime == (await getMusicLength())) {
-      clearInterval(id);
-      console.log("aaa");
-      nextTrack();
-    }
+		if (currentTime == (await getMusicLength())) {
+			clearInterval(id);
+			console.log("aaa");
+			nextTrack();
+		}
 
-    setCurrentMinuteText(convertSecondsToMinuteText(currentTime));
-    changeLinearGradient(
-      "progress-bar",
-      currentTime /
-        (convertMinuteTextToSeconds(
-          getElement("#music-max-minute").textContent
-        ) /
-          100)
-    );
-    progressBar.value = currentTime;
-  }
-  let id = setInterval(loop, 100);
+		setCurrentMinuteText(convertSecondsToMinuteText(currentTime));
+		changeLinearGradient(
+			"progress-bar",
+			currentTime /
+				(convertMinuteTextToSeconds(
+					getElement("#music-max-minute").textContent
+				) /
+					100)
+		);
+		progressBar.value = currentTime;
+	}
+	let id = setInterval(loop, 100);
 };
 
 const setMaxMinuteAndProgressBarValue = async (music_length) => {
-  let maxValue = getElement("#music-max-minute");
-  let progressBar = getElement("#progress-bar");
-  progressBar.max = music_length;
-  maxValue.textContent = convertSecondsToMinuteText(music_length);
+	let maxValue = getElement("#music-max-minute");
+	let progressBar = getElement("#progress-bar");
+	progressBar.max = music_length;
+	maxValue.textContent = convertSecondsToMinuteText(music_length);
 };
 
 const setProgressbarValueToMusicMinutes = async (musicIndex) => {
-  const progressBar = getElement("#progress-bar");
-  const musicMaxValue = await getMusicLengthByIndex(musicIndex);
-  progressBar.max = musicMaxValue;
+	const progressBar = getElement("#progress-bar");
+	const musicMaxValue = await getMusicLengthByIndex(musicIndex);
+	progressBar.max = musicMaxValue;
 };
 
 const setCurrentMinuteText = (text) => {
-  getElement("#current-minute").textContent = text;
+	getElement("#current-minute").textContent = text;
 };
 
 const convertSecondsToMinuteText = (seconds) => {
-  var date = new Date(0);
-  date.setSeconds(seconds);
-  return date.toISOString().substring(11, 19);
+	var date = new Date(0);
+	date.setSeconds(seconds);
+	return date.toISOString().substring(11, 19);
 };
 
 const convertMinuteTextToSeconds = (time) =>
-  time.split(":").reduce((s, t) => s * 60 + +t, 0);
+	time.split(":").reduce((s, t) => s * 60 + +t, 0);
 
 window.onload = async () => {
-  document.getElementById("settings").addEventListener("click", async (e) => {
-    e.preventDefault();
-    await invoke("create_settings");
-  });
+	document.getElementById("settings").addEventListener("click", async (e) => {
+		e.preventDefault();
+		await invoke("create_settings");
+	});
 
-  document.getElementById("minimize").addEventListener("click", (e) => {
-    e.preventDefault();
-    appWindow.minimize();
-  });
+	document.getElementById("minimize").addEventListener("click", (e) => {
+		e.preventDefault();
+		appWindow.minimize();
+	});
 
-  document.getElementById("close").addEventListener("click", (e) => {
-    e.preventDefault();
-    appWindow.close();
-  });
+	document.getElementById("close").addEventListener("click", (e) => {
+		e.preventDefault();
+		appWindow.close();
+	});
 
-  refreshProgressbarStyle("#volume-bar");
-  refreshProgressbarStyle("#progress-bar");
-  togglePlaylistMenu();
-  nextTrackButton();
-  previousTrackButton();
-  // startTimer();
-  //   refreshCurrentTimeValueToText();
-  volumeInitialize();
-  setCurrentTime();
-  togglePlayButton();
-  toggleFavourite();
+	refreshProgressbarStyle("#volume-bar");
+	refreshProgressbarStyle("#progress-bar");
+	togglePlaylistMenu();
+	nextTrackButton();
+	previousTrackButton();
+	// startTimer();
+	//   refreshCurrentTimeValueToText();
+	volumeInitialize();
+	setCurrentTime();
+	togglePlayButton();
+	toggleFavourite();
 
-  setProgressbarValueToMusicMinutes(await getCurrentMusicIndex());
-  setMaxMinuteAndProgressBarValue(await getMusicLength());
-  mergeProgressBarWithMusic();
+	setProgressbarValueToMusicMinutes(await getCurrentMusicIndex());
+	setMaxMinuteAndProgressBarValue(await getMusicLength());
+	mergeProgressBarWithMusic();
+	getElement("#music-name").textContent = await getCurrentMusicName();
 
-  // playPlaylist(playList);
+	// playPlaylist(playList);
 };
