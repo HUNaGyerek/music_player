@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 use rodio::{source::Source, Decoder, OutputStream, OutputStreamHandle, Sink};
 use std::fs::File;
 use std::io::BufReader;
@@ -74,8 +76,9 @@ impl AudioPlayer {
                     self.start_time = Some(Instant::now());
                     self.paused_position = None;
                 } else {
-                    println!("Failed to decode audio file: {:?}", file_path);
-                    self.next_track()
+                    self.playlist.remove(self.current_index); // remove the file from the list
+                    self.current_index -= 1; // decrement to play the same index that will be the next
+                    self.next_track();
                 }
             }
         }

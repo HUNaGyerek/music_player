@@ -51,14 +51,14 @@ fn resize_window(window: Window) -> Result<(), tauri::Error> {
 #[tauri::command]
 fn next_track(state: tauri::State<'_, Arc<Mutex<AudioPlayer>>>) {
     let mut audio_player = state.lock().unwrap();
-    println!("Next track");
+    // println!("Next track");
     audio_player.next_track();
 }
 
 #[tauri::command]
 fn previous_track(state: tauri::State<'_, Arc<Mutex<AudioPlayer>>>) {
     let mut audio_player = state.lock().unwrap();
-    println!("Previous track");
+    // println!("Previous track");
     audio_player.previous_track();
 }
 
@@ -77,6 +77,7 @@ fn resume_audio(state: tauri::State<'_, Arc<Mutex<AudioPlayer>>>) {
 #[tauri::command]
 fn get_volume(state: tauri::State<'_, Arc<Mutex<AudioPlayer>>>) -> Option<f32> {
     let audio_player = state.lock().unwrap();
+    println!("{:?}", audio_player.get_volume());
     audio_player.get_volume()
 }
 

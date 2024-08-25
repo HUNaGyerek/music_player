@@ -93,17 +93,27 @@ const getCurrentMusicName = () => invoke("get_current_track_name");
 
 const getVolume = () => invoke("get_volume");
 
+const setDefaultVolume = async () => {
+	// refreshProgressbarStyle("#volume-bar");
+	changeLinearGradient("volume-bar", await getVolume());
+	getElement("#volume-bar").value = await getVolume();
+};
+
 const volumeInitialize = () => {
-	setVolume();
+	setVolumeOnInput();
 	volumeButtonStates();
 	toggleMuteButton();
 };
 
-const setVolume = () => {
+const setVolume = (volume) => {
+	invoke("set_volume", { volume: volume / 100 }).catch((error) => {
+		console.error("Error setting volume:", error);
+	});
+};
+
+const setVolumeOnInput = () => {
 	$("#volume-bar").on("input", (e) => {
-		invoke("set_volume", { volume: +e.target.value / 100 }).catch((error) => {
-			console.error("Error setting volume:", error);
-		});
+		setVolume(+e.target.value);
 	});
 };
 
@@ -111,7 +121,7 @@ const volumeButtonStates = () => {
 	const muteButton = getElement("#mute-button");
 
 	$("#volume-bar").on("input", (e) => {
-		if (e.target.value < 100 && e.target.value > 75) {
+		if (e.target.value <= 100 && e.target.value > 75) {
 			muteButton.classList.add("bi-volume-up-fill");
 			muteButton.classList.remove("bi-volume-down-fill");
 			muteButton.classList.remove("bi-volume-off-fill");
@@ -126,6 +136,11 @@ const volumeButtonStates = () => {
 			muteButton.classList.remove("bi-volume-down-fill");
 			muteButton.classList.add("bi-volume-off-fill");
 			muteButton.classList.remove("bi-volume-mute-fill");
+		} else {
+			muteButton.classList.remove("bi-volume-up-fill");
+			muteButton.classList.remove("bi-volume-down-fill");
+			muteButton.classList.remove("bi-volume-off-fill");
+			muteButton.classList.add("bi-volume-mute-fill");
 		}
 	});
 };
@@ -140,30 +155,36 @@ const toggleMuteButton = () => {
 		if (volumeBar.value == 0) {
 			// Change value, and refresh the css to it
 			volumeBar.value = 100;
+			setVolume(volumeBar.value);
 			changeLinearGradient(volumeBar.id, volumeBar.value);
 
 			// Change icons
 			muteButton.classList.add("bi-volume-up-fill");
+			muteButton.classList.remove("bi-volume-down-fill");
+			muteButton.classList.remove("bi-volume-off-fill");
 			muteButton.classList.remove("bi-volume-mute-fill");
 		} else {
 			// Change value, and refresh the css to it
 			volumeBar.value = 0;
+			setVolume(volumeBar.value);
 			changeLinearGradient(volumeBar.id, volumeBar.value);
 
 			// Change icons
-			muteButton.classList.add("bi-volume-mute-fill");
 			muteButton.classList.remove("bi-volume-up-fill");
+			muteButton.classList.remove("bi-volume-down-fill");
+			muteButton.classList.remove("bi-volume-off-fill");
+			muteButton.classList.add("bi-volume-mute-fill");
 		}
 	});
 };
 
-const toggleFavourite = () => {
-	const favouriteButton = getElement("#favourite-button");
-	favouriteButton.addEventListener("click", (e) => {
-		favouriteButton.classList.toggle("bi-heart");
-		favouriteButton.classList.toggle("bi-heart-fill");
-	});
-};
+// const toggleFavourite = () => {
+// 	const favouriteButton = getElement("#favourite-button");
+// 	favouriteButton.addEventListener("click", (e) => {
+// 		favouriteButton.classList.toggle("bi-heart");
+// 		favouriteButton.classList.toggle("bi-heart-fill");
+// 	});
+// };
 
 const togglePlayButton = () => {
 	const playButton = getElement("#play-button");
@@ -194,7 +215,7 @@ const togglePlaylistMenu = () => {
 		});
 };
 
-const refreshProgressbarStyle = (element) => {
+const onInputRefreshProgressBarStyle = (element) => {
 	$(element).on("input", (e) => {
 		changeLinearGradient(e.target.id, e.target.value / (e.target.max / 100));
 	});
@@ -213,14 +234,36 @@ const refreshCurrentTimeValueToText = () => {
 
 const mergeProgressBarWithMusic = () => {
 	const progressBar = getElement("#progress-bar");
+	let isSeeking = false; // Flag to track if the user is manually changing the progress bar
+
+	// Event listener for manual change of the progress bar
+	progressBar.addEventListener("input", () => {
+		isSeeking = true;
+		const newTime = progressBar.value;
+
+		setCurrentMinuteText(convertSecondsToMinuteText(newTime)); // Update the displayed time
+		changeLinearGradient(
+			"progress-bar",
+			newTime /
+				(convertMinuteTextToSeconds(
+					getElement("#music-max-minute").textContent
+				) /
+					100)
+		);
+	});
+
+	// Event listener for when the user releases the progress bar
+	progressBar.addEventListener("change", () => {
+		isSeeking = false;
+	});
 
 	async function loop() {
+		if (isSeeking) return; // Skip updating the progress bar if the user is manually changing it
+
 		const currentTime = await getCurrentPosition();
-		console.log(currentTime);
 
 		if (currentTime == (await getMusicLength())) {
 			clearInterval(id);
-			console.log("aaa");
 			nextTrack();
 		}
 
@@ -280,8 +323,8 @@ window.onload = async () => {
 		appWindow.close();
 	});
 
-	refreshProgressbarStyle("#volume-bar");
-	refreshProgressbarStyle("#progress-bar");
+	onInputRefreshProgressBarStyle("#volume-bar");
+	onInputRefreshProgressBarStyle("#progress-bar");
 	togglePlaylistMenu();
 	nextTrackButton();
 	previousTrackButton();
@@ -295,6 +338,7 @@ window.onload = async () => {
 	setProgressbarValueToMusicMinutes(await getCurrentMusicIndex());
 	setMaxMinuteAndProgressBarValue(await getMusicLength());
 	mergeProgressBarWithMusic();
+	setDefaultVolume();
 	getElement("#music-name").textContent = await getCurrentMusicName();
 
 	// playPlaylist(playList);
