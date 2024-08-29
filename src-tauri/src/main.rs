@@ -133,15 +133,14 @@ fn get_current_track_name(state: tauri::State<'_, Arc<Mutex<AudioPlayer>>>) -> O
 
 fn main() {
     let audio_player = Arc::new(Mutex::new(AudioPlayer::new()));
-    // audio_player.lock().unwrap().initialize();
 
     let args: Vec<std::path::PathBuf> = std::env::args().map(std::path::PathBuf::from).collect();
-    let args: Vec<std::path::PathBuf> = vec![
-        std::path::PathBuf::from("asd"),
-        std::path::PathBuf::from(
-            "C:\\Users\\Vivi-PC\\Music\\DESH - APÁLY (Official Music Video) [AnqYO0TCSG8].mp3",
-        ),
-    ];
+    // let args: Vec<std::path::PathBuf> = vec![
+    //     std::path::PathBuf::from("Overtone.exe"),
+    //     std::path::PathBuf::from(
+    //         "D:\\Zenek\\Hardstyle\\[Hardstyle] Da Tweekaz - The Hanging Tree.mp4",
+    //     ),
+    // ];
     if args.len() > 1 {
         let file_paths = args[1..].to_vec();
         let dir = std::path::Path::new(&file_paths[0]).parent().unwrap();

@@ -46,15 +46,6 @@ impl AudioPlayer {
         }
     }
 
-    // pub fn initialize(&mut self) {
-    //     let (stream, stream_handle) = OutputStream::try_default().unwrap();
-    //     let sink = Sink::try_new(&stream_handle).unwrap();
-    //     sink.set_volume(self.volume);
-    //     self.stream = Some(stream);
-    //     self.stream_handle = Some(stream_handle);
-    //     self.sink = Some(Arc::new(Mutex::new(sink)));
-    // }
-
     pub fn play_playlist(&mut self, playlist: Vec<PathBuf>, index_of_opened_track: usize) {
         self.playlist = playlist;
         self.current_index = index_of_opened_track;
