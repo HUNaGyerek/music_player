@@ -2,3 +2,5 @@
 package-lock.json
 /src-tauri/target
 /src/tailwind-output
+register_file_associations.ps1
+register_file_associations.reg
