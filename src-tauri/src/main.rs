@@ -6,6 +6,9 @@ mod utils;
 use audio::AudioPlayer;
 use std::sync::{Arc, Mutex};
 
+// use rand::seq::SliceRandom; // Import the shuffling trait
+// use rand::thread_rng; // Import the random number generator
+
 use tauri::{Manager, Window};
 use utils::{CLOSED_DIMENSIONS, OPENED_DIMENSIONS};
 
@@ -131,16 +134,31 @@ fn get_current_track_name(state: tauri::State<'_, Arc<Mutex<AudioPlayer>>>) -> O
     }
 }
 
+#[tauri::command]
+fn shuffle_playlist(state: tauri::State<'_, Arc<Mutex<AudioPlayer>>>) {
+    let mut audio_player = state.lock().unwrap();
+    audio_player.toggle_shuffle();
+}
+
 fn main() {
     let audio_player = Arc::new(Mutex::new(AudioPlayer::new()));
 
-    let args: Vec<std::path::PathBuf> = std::env::args().map(std::path::PathBuf::from).collect();
-    // let args: Vec<std::path::PathBuf> = vec![
-    //     std::path::PathBuf::from("Overtone.exe"),
-    //     std::path::PathBuf::from(
-    //         "D:\\Zenek\\Hardstyle\\[Hardstyle] Da Tweekaz - The Hanging Tree.mp4",
-    //     ),
-    // ];
+    // Sense if its in release or dev mode
+    let args: Vec<std::path::PathBuf> = if cfg!(debug_assertions) {
+        // Dev mode
+        println!("{:?}", "Dev mode");
+        vec![
+            std::path::PathBuf::from("Overtone.exe"),
+            std::path::PathBuf::from(
+                "D:\\Zenek\\Hardstyle\\[Hardstyle] Da Tweekaz - The Hanging Tree.mp4",
+            ),
+        ]
+    } else {
+        // Release mode
+        println!("{:?}", "Release mode");
+        std::env::args().map(std::path::PathBuf::from).collect()
+    };
+
     if args.len() > 1 {
         let file_paths = args[1..].to_vec();
         let dir = std::path::Path::new(&file_paths[0]).parent().unwrap();
@@ -150,6 +168,7 @@ fn main() {
             .collect::<Result<Vec<_>, std::io::Error>>()
             .unwrap();
         entries.sort();
+        // println!("{:#?}", entries);
 
         let target = &args[1];
         let position = entries.iter().position(|entry| entry == target);
@@ -186,6 +205,7 @@ fn main() {
             set_current_time,
             get_playlist_len,
             get_current_track_name,
+            shuffle_playlist,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

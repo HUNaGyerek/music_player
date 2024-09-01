@@ -1744,6 +1744,7 @@ dependencies = [
 name = "music_player"
 version = "0.0.0"
 dependencies = [
+ "rand 0.8.5",
  "rodio",
  "serde",
  "serde_json",

@@ -75,28 +75,25 @@ const setCurrentTime = () => {
 
 const getCurrentPosition = () => invoke("get_current_position");
 
-const getMusicLengthByIndex = (musicIndex) => {
-  return invoke("get_audio_length", { musicIndex });
-};
+const getMusicLengthByIndex = (musicIndex) =>
+  invoke("get_audio_length", { musicIndex });
 
-const getMusicLength = async () => {
-  return invoke("get_audio_length", {
+const getMusicLength = async () =>
+  invoke("get_audio_length", {
     musicIndex: await getCurrentMusicIndex(),
   });
-};
 
-const getCurrentMusicIndex = () => {
-  return invoke("get_current_music_index");
-};
+const getCurrentMusicIndex = () => invoke("get_current_music_index");
 
 const getCurrentMusicName = () => invoke("get_current_track_name");
 
 const getVolume = () => invoke("get_volume");
 
 const setDefaultVolume = async () => {
-  // refreshProgressbarStyle("#volume-bar");
-  changeLinearGradient("volume-bar", await getVolume());
-  getElement("#volume-bar").value = await getVolume();
+  let currentVolume = await getVolume();
+
+  changeLinearGradient("volume-bar", currentVolume);
+  getElement("#volume-bar").value = currentVolume;
 };
 
 const volumeInitialize = () => {
@@ -216,6 +213,9 @@ const togglePlaylistMenu = () => {
 };
 
 const onInputRefreshProgressBarStyle = (element) => {
+  getElement(element).onInput = () => {
+    console.log("asd");
+  };
   $(element).on("input", (e) => {
     changeLinearGradient(e.target.id, e.target.value / (e.target.max / 100));
   });
@@ -230,6 +230,12 @@ const refreshCurrentTimeValueToText = () => {
   progressBar.addEventListener("input", (e) => {
     setCurrentMinuteText(convertSecondsToMinuteText(e.target.value));
   });
+};
+
+const toggleShuffle = () => {
+  getElement("#shuffle-button").onclick = () => {
+    invoke("shuffle_playlist");
+  };
 };
 
 const mergeProgressBarWithMusic = () => {
@@ -335,6 +341,7 @@ window.onload = async () => {
   volumeInitialize();
   setCurrentTime();
   togglePlayButton();
+  toggleShuffle();
   //   toggleFavourite();
 
   setProgressbarValueToMusicMinutes(await getCurrentMusicIndex());

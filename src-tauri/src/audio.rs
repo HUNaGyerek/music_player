@@ -7,6 +7,9 @@ use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 
+use crate::utils::ShuffleState;
+use rand::seq::SliceRandom;
+
 use symphonia::core::formats::FormatOptions;
 use symphonia::core::io::MediaSourceStream;
 use symphonia::core::meta::MetadataOptions;
@@ -26,6 +29,8 @@ pub struct AudioPlayer {
     playlist: Vec<PathBuf>,
     current_index: usize,
     track_duration: Option<Duration>,
+    shuffled_indices: Vec<usize>,
+    shuffle_state: ShuffleState,
 }
 
 impl AudioPlayer {
@@ -43,6 +48,8 @@ impl AudioPlayer {
             playlist: Vec::new(),
             current_index: 0,
             track_duration: None,
+            shuffled_indices: Vec::new(),
+            shuffle_state: ShuffleState::Unshuffled,
         }
     }
 
@@ -53,10 +60,42 @@ impl AudioPlayer {
     }
 
     pub fn play_current_track(&mut self) {
+        match self.shuffle_state {
+            ShuffleState::Unshuffled => self.play_unshuffled_track(),
+            ShuffleState::Shuffled => self.play_shuffled_track(),
+        }
+    }
+
+    fn play_unshuffled_track(&mut self) {
         if let Some(sink) = &self.sink {
             sink.lock().unwrap().stop();
+
             if self.current_index < self.playlist.len() {
                 let file_path = &self.playlist[self.current_index];
+                let file = File::open(file_path).unwrap();
+                let source = Decoder::new(BufReader::new(file));
+
+                if let Ok(source) = source {
+                    self.track_duration = Some(source.total_duration().unwrap_or(Duration::ZERO));
+                    sink.lock().unwrap().append(source);
+
+                    self.start_time = Some(Instant::now());
+                    self.paused_position = None;
+                } else {
+                    self.playlist.remove(self.current_index); // remove the file from the list
+                    self.current_index -= 1; // decrement to play the same index that will be the next
+                    self.next_track();
+                }
+            }
+        }
+    }
+
+    fn play_shuffled_track(&mut self) {
+        if let Some(sink) = &self.sink {
+            sink.lock().unwrap().stop();
+
+            if self.current_index < self.playlist.len() {
+                let file_path = &self.playlist[self.shuffled_indices[self.current_index]];
                 let file = File::open(file_path).unwrap();
                 let source = Decoder::new(BufReader::new(file));
 
@@ -203,6 +242,30 @@ impl AudioPlayer {
             .to_str()
             .unwrap()
             .to_string()
+    }
+
+    pub fn toggle_shuffle(&mut self) {
+        match self.shuffle_state {
+            ShuffleState::Unshuffled => {
+                println!("{:?}", "shuff");
+                self.shuffle();
+                self.shuffle_state = ShuffleState::Shuffled;
+            }
+            ShuffleState::Shuffled => {
+                println!("{:?}", "unshuff");
+                self.shuffle_state = ShuffleState::Unshuffled;
+            }
+        }
+    }
+
+    fn shuffle(&mut self) {
+        let mut indices = (0..self.playlist.len()).collect::<Vec<usize>>();
+        indices.shuffle(&mut rand::thread_rng()); // Shuffle in place
+        self.shuffled_indices = indices; // Update the shuffled indices
+        self.shuffle_state = ShuffleState::Shuffled;
+        // self.shuffled_indices = (0..self.playlist.len())
+        //     .collect::<Vec<usize>>()
+        //     .shuffle(&mut rand::thread_rng());
     }
 }
 
