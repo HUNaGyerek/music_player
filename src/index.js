@@ -114,32 +114,39 @@ const setVolumeOnInput = () => {
   });
 };
 
-const volumeButtonStates = () => {
+const changeVolumeIcon = (state) => {
   const muteButton = getElement("#mute-button");
+  const volumeStates = [
+    "bi-volume-mute-fill",
+    "bi-volume-off-fill",
+    "bi-volume-down-fill",
+    "bi-volume-up-fill",
+  ];
+  switch (state) {
+    case 0:
+      muteButton.classList.remove(...volumeStates);
+      muteButton.classList.add(volumeStates[0]);
+      break;
+    case 1:
+      muteButton.classList.remove(...volumeStates);
+      muteButton.classList.add(volumeStates[1]);
+      break;
+    case 2:
+      muteButton.classList.remove(...volumeStates);
+      muteButton.classList.add(volumeStates[2]);
+      break;
+    case 3:
+      muteButton.classList.remove(...volumeStates);
+      muteButton.classList.add(volumeStates[3]);
+      break;
+  }
+};
 
-  $("#volume-bar").on("input", (e) => {
-    if (e.target.value <= 100 && e.target.value > 75) {
-      muteButton.classList.add("bi-volume-up-fill");
-      muteButton.classList.remove("bi-volume-down-fill");
-      muteButton.classList.remove("bi-volume-off-fill");
-      muteButton.classList.remove("bi-volume-mute-fill");
-    } else if (e.target.value >= 25 && e.target.value <= 75) {
-      muteButton.classList.remove("bi-volume-up-fill");
-      muteButton.classList.add("bi-volume-down-fill");
-      muteButton.classList.remove("bi-volume-off-fill");
-      muteButton.classList.remove("bi-volume-mute-fill");
-    } else if (e.target.value > 0 && e.target.value < 25) {
-      muteButton.classList.remove("bi-volume-up-fill");
-      muteButton.classList.remove("bi-volume-down-fill");
-      muteButton.classList.add("bi-volume-off-fill");
-      muteButton.classList.remove("bi-volume-mute-fill");
-    } else {
-      muteButton.classList.remove("bi-volume-up-fill");
-      muteButton.classList.remove("bi-volume-down-fill");
-      muteButton.classList.remove("bi-volume-off-fill");
-      muteButton.classList.add("bi-volume-mute-fill");
-    }
-  });
+const volumeButtonStates = () => {
+  getElement("#volume-bar").oninput = (e) => {
+    const state = Math.ceil(e.target.value / 25);
+    changeVolumeIcon(state);
+  };
 };
 
 const toggleMuteButton = () => {
@@ -185,31 +192,25 @@ const toggleMuteButton = () => {
 
 const togglePlayButton = () => {
   const playButton = getElement("#play-button");
-  playButton.addEventListener("click", async () => {
+  playButton.onclick = () => {
     if (playButton.classList.contains("bi-play-fill")) {
-      resumeAudio();
-
       playButton.classList.remove("bi-play-fill");
       playButton.classList.add("bi-pause-fill");
+      resumeAudio();
     } else {
-      pauseAudio();
-
       playButton.classList.remove("bi-pause-fill");
       playButton.classList.add("bi-play-fill");
+      pauseAudio();
     }
-  });
+  };
 };
 
-const togglePlaylistMenu = () => {
-  document
-    .getElementById("playlistButton")
-    .addEventListener("click", async (event) => {
-      event.preventDefault();
-      const menuVisibility = getElement(".play-list");
-      menuVisibility.classList.toggle("d-none");
+getElement("#playlistButton").onclick = async (event) => {
+  event.preventDefault();
+  const menuVisibility = getElement(".play-list");
+  menuVisibility.classList.toggle("d-none");
 
-      await invoke("resize_window");
-    });
+  await invoke("resize_window");
 };
 
 const onInputRefreshProgressBarStyle = (element) => {
@@ -333,7 +334,6 @@ window.onload = async () => {
 
   onInputRefreshProgressBarStyle("#volume-bar");
   onInputRefreshProgressBarStyle("#progress-bar");
-  togglePlaylistMenu();
   nextTrackButton();
   previousTrackButton();
   // startTimer();

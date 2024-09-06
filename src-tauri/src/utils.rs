@@ -14,5 +14,5 @@ pub const CLOSED_DIMENSIONS: PhysicalSize<u32> = PhysicalSize {
 };
 pub const OPENED_DIMENSIONS: PhysicalSize<u32> = PhysicalSize {
     width: 800u32,
-    height: 600u32,
+    height: 500u32,
 };

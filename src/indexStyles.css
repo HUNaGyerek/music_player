@@ -103,7 +103,7 @@ input[type="range"]::-webkit-slider-thumb {
 
 .play-list:not(.d-none) {
   width: 800px;
-  height: 296px;
+  height: calc(300px + 15px);
   border-radius: 5px;
   background-color: #606060;
   position: relative;
