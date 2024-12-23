@@ -3,9 +3,9 @@
 	import { currentTrack } from '$lib/store';
 	import { convertSecondsToMinuteText } from '$lib/utils';
 
-	$effect(async () => {
-		console.log($currentTrack);
-	});
+	// $effect(async () => {
+	// 	console.log($currentTrack);
+	// });
 </script>
 
 <div data-tauri-drag-region class="flex select-none gap-4">

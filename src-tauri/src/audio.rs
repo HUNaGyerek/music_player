@@ -1,7 +1,6 @@
 #![allow(dead_code)]
 
 use rodio::{source::Source, Decoder, OutputStream, OutputStreamHandle, Sink};
-use std::error::Error;
 use std::fs::File;
 use std::io::BufReader;
 use std::path::PathBuf;
