@@ -26,12 +26,12 @@
 	}
 
 	async function handlePrevious() {
-		previous_track();
+		await previous_track();
 		$currentTrack = await get_current_track_informations();
 	}
 
 	async function handleNext() {
-		next_track();
+		await next_track();
 		$currentTrack = await get_current_track_informations();
 	}
 </script>
