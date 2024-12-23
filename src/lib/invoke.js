@@ -13,3 +13,4 @@ export const get_current_track_name = () => invoke('get_current_track_name');
 export const get_playlist_len = () => invoke('get_playlist_len');
 export const get_current_music_index = () => invoke('get_current_music_index');
 export const get_current_track_informations = () => invoke('get_current_track_informations');
+export const get_current_position = () => invoke('get_current_position');

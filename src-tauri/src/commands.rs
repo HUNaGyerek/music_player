@@ -1,4 +1,5 @@
 use std::sync::{Arc, Mutex};
+use tauri::{Emitter, Manager};
 
 use crate::audio::{AudioPlayer, Music};
 
