@@ -72,7 +72,7 @@ pub fn run() {
             commands::get_playlist_len,
             commands::get_current_track_name,
             commands::shuffle_playlist,
-            commands::test,
+            commands::get_current_track_informations,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

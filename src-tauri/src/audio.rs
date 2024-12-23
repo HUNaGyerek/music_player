@@ -1,6 +1,7 @@
 #![allow(dead_code)]
 
 use rodio::{source::Source, Decoder, OutputStream, OutputStreamHandle, Sink};
+use std::error::Error;
 use std::fs::File;
 use std::io::BufReader;
 use std::path::PathBuf;
@@ -31,6 +32,12 @@ pub struct AudioPlayer {
     track_duration: Option<Duration>,
     shuffled_indices: Vec<usize>,
     shuffle_state: ShuffleState,
+}
+
+#[derive(serde::Serialize)]
+pub struct Music {
+    pub title: String,
+    pub lenght: u64,
 }
 
 impl AudioPlayer {
@@ -161,6 +168,46 @@ impl AudioPlayer {
     }
 
     pub fn get_audio_length(&self, audio_index: usize) -> Option<u64> {
+        if audio_index < self.playlist.len() {
+            let src = File::open(self.playlist[audio_index].clone()).unwrap();
+            let mss = MediaSourceStream::new(Box::new(src), Default::default());
+            let hint = Hint::new();
+
+            let probed = get_probe().format(
+                &hint,
+                mss,
+                &FormatOptions::default(),
+                &MetadataOptions::default(),
+            );
+
+            if let Ok(probed) = probed {
+                let format = probed.format;
+
+                let duration = format
+                    .default_track()
+                    .unwrap()
+                    .codec_params
+                    .time_base
+                    .map(|time_base| {
+                        time_base.calc_time(
+                            format
+                                .default_track()
+                                .unwrap()
+                                .codec_params
+                                .n_frames
+                                .unwrap(),
+                        )
+                    })
+                    .unwrap();
+
+                return Some(duration.seconds);
+            }
+        }
+        Some(1)
+    }
+
+    pub fn get_current_audio_length(&self) -> Option<u64> {
+        let audio_index = self.current_index;
         if audio_index < self.playlist.len() {
             let src = File::open(self.playlist[audio_index].clone()).unwrap();
             let mss = MediaSourceStream::new(Box::new(src), Default::default());
