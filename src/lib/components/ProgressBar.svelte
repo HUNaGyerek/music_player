@@ -1,14 +1,54 @@
 <script>
-	let progress = $state();
+	import {
+		get_current_audio_length,
+		get_current_music_index,
+		get_current_track_informations,
+		set_current_time
+	} from '$lib/invoke';
+	import { currentTrack } from '$lib/store';
+	import { convertSecondsToMinuteText } from '$lib/utils';
+	import { listen } from '@tauri-apps/api/event';
+	import { onMount } from 'svelte';
+
+	function seek_to(event) {
+		set_current_time(+event.target.value);
+	}
+
+	let progress = $state(0);
 	$effect(() => {
-		console.log(`Progress: ${progress}`);
-		document.querySelector('#progress-bar').style.setProperty('--value', `${progress}%`);
+		const progressPercentage = (progress / lenght) * 100 || 0;
+
+		// console.log(`Progress: ${progressPercentage}%`);
+		document.querySelector('#progress-bar').style.setProperty('--value', `${progressPercentage}%`);
+	});
+
+	let lenght = $state();
+	onMount(async () => {
+		lenght = await get_current_audio_length();
+
+		listen('track-progress', (event) => {
+			progress = event.payload;
+		});
+
+		listen('track-changed', async (event) => {
+			console.log('Changed');
+
+			$currentTrack = await get_current_track_informations();
+			lenght = $currentTrack.lenght;
+		});
 	});
 </script>
 
 <div>
-	<input id="progress-bar" class="slider w-full" type="range" bind:value={progress} />
-	<p class="select-none text-sm text-white">00:00:00</p>
+	<input
+		id="progress-bar"
+		class="slider w-full"
+		type="range"
+		max={lenght}
+		bind:value={progress}
+		onchange={seek_to}
+	/>
+	<p class="select-none text-sm text-white">{convertSecondsToMinuteText(progress || 0)}</p>
 </div>
 
 <style lang="postcss">
