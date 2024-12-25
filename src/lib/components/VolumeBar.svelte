@@ -7,9 +7,9 @@
 		set_volume(volume);
 	}
 
-	let volume = $state();
+	let volume = $state(0);
 	$effect(async () => {
-		console.log(`Volume: ${volume}`);
+		// console.log(`Volume: ${volume}`);
 		document.querySelector('#volume-bar').style.setProperty('--value', `${volume}%`);
 	});
 
@@ -19,15 +19,17 @@
 </script>
 
 <div class="flex gap-2">
-	{#if volume == 0}
-		<button><VolumeX strokeWidth={3} fill="white" /></button>
-	{:else if Math.ceil(volume / 33) == 1}
-		<button><Volume strokeWidth={3} fill="white" /></button>
-	{:else if Math.ceil(volume / 33) == 2}
-		<button><Volume1 strokeWidth={3} fill="white" /></button>
-	{:else}
-		<button><Volume2 strokeWidth={3} fill="white" /></button>
-	{/if}
+	<button>
+		{#if volume == 0}
+			<VolumeX strokeWidth={3} fill="white" />
+		{:else if Math.ceil(volume / 33) == 1}
+			<Volume strokeWidth={3} fill="white" />
+		{:else if Math.ceil(volume / 33) == 2}
+			<Volume1 strokeWidth={3} fill="white" />
+		{:else}
+			<Volume2 strokeWidth={3} fill="white" />
+		{/if}
+	</button>
 	<input
 		id="volume-bar"
 		class="slider w-20"
