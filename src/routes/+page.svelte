@@ -1,8 +1,14 @@
 <script>
+	import { onMount } from 'svelte';
 	import ControlInterface from '$lib/components/ControlInterface.svelte';
 	import ProgressBar from '$lib/components/ProgressBar.svelte';
 	import SongInformations from '$lib/components/SongInformations.svelte';
 	import WindowControls from '$lib/components/WindowControls.svelte';
+	import { disableContextMenu } from '$lib/utils';
+
+	onMount(() => {
+		disableContextMenu();
+	});
 </script>
 
 <section>
