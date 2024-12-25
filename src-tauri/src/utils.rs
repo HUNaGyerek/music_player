@@ -9,10 +9,10 @@ pub enum ShuffleState {
 
 // Constants for dimensions
 pub const CLOSED_DIMENSIONS: PhysicalSize<u32> = PhysicalSize {
-    width: 800u32,
-    height: 200u32,
+    width: 816_u32,
+    height: 204_u32,
 };
 pub const OPENED_DIMENSIONS: PhysicalSize<u32> = PhysicalSize {
-    width: 800u32,
-    height: 500u32,
+    width: 816_u32,
+    height: 510_u32,
 };
