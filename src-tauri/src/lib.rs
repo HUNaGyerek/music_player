@@ -1,10 +1,13 @@
 use std::sync::{Arc, Mutex};
 
 use audio::AudioPlayer;
+use tauri::Manager;
 
 mod audio;
 mod commands;
 mod utils;
+
+use commands::*;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -17,7 +20,7 @@ pub fn run() {
         vec![
             std::path::PathBuf::from("Overtone.exe"),
             std::path::PathBuf::from(
-                "D:\\Programozas\\Rust\\youtube-downloader\\songs\\Wolverave - Vielleicht Vielleicht (Hardtekk Edit).mp3",
+                "D:\\Programozas\\Rust\\youtube-downloader\\songs\\Jiyagi - BOULEVARD OF BROKEN DREAMS.mp3",
             ),
         ]
     } else {
@@ -43,7 +46,7 @@ pub fn run() {
         audio_player
             .lock()
             .unwrap()
-            .play_playlist(entries, position.unwrap());
+            .load_playlist(entries, position.unwrap());
     }
 
     tauri::Builder::default()
@@ -56,23 +59,29 @@ pub fn run() {
                         .build(),
                 )?;
             }
+            let state = app.state::<Arc<Mutex<AudioPlayer>>>().inner().clone();
+            start_autonomous_playback(app.handle().clone(), state);
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
-            commands::pause_audio,
-            commands::resume_audio,
-            commands::next_track,
-            commands::previous_track,
-            commands::get_volume,
-            commands::set_volume,
-            commands::get_audio_length,
-            commands::get_current_position,
-            commands::get_current_music_index,
-            commands::set_current_time,
-            commands::get_playlist_len,
-            commands::get_current_track_name,
-            commands::shuffle_playlist,
-            commands::get_current_track_informations,
+            pause_audio,
+            resume_audio,
+            next_track,
+            previous_track,
+            get_volume,
+            set_volume,
+            get_current_position,
+            get_current_music_index,
+            set_current_time,
+            get_playlist_len,
+            get_current_track_name,
+            shuffle_playlist,
+            get_current_track_informations,
+            get_current_audio_length,
+            toggle_playlist_menu,
+            get_playlist,
+            play_by_index,
+            get_track_informations_by_index,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

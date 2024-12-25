@@ -1,6 +1,7 @@
 #![allow(dead_code)]
 
 use rodio::{source::Source, Decoder, OutputStream, OutputStreamHandle, Sink};
+use serde::{Deserialize, Serialize};
 use std::fs::File;
 use std::io::BufReader;
 use std::path::PathBuf;
@@ -33,7 +34,7 @@ pub struct AudioPlayer {
     shuffle_state: ShuffleState,
 }
 
-#[derive(serde::Serialize)]
+#[derive(Serialize, Deserialize)]
 pub struct Music {
     pub title: String,
     pub lenght: u64,
@@ -59,16 +60,35 @@ impl AudioPlayer {
         }
     }
 
-    pub fn play_playlist(&mut self, playlist: Vec<PathBuf>, index_of_opened_track: usize) {
+    pub fn load_playlist(&mut self, playlist: Vec<PathBuf>, index_of_opened_track: usize) {
         self.playlist = playlist;
         self.current_index = index_of_opened_track;
         self.play_current_track();
+    }
+
+    pub fn get_playlist(&self) -> Vec<Music> {
+        self.playlist
+            .iter()
+            .enumerate()
+            .map(|(idx, path)| {
+                let title = path.file_stem().unwrap().to_str().unwrap().to_string();
+                let lenght = self.get_lenght_by_index(idx).unwrap();
+                Music { title, lenght }
+            })
+            .collect()
     }
 
     pub fn play_current_track(&mut self) {
         match self.shuffle_state {
             ShuffleState::Unshuffled => self.play_unshuffled_track(),
             ShuffleState::Shuffled => self.play_shuffled_track(),
+        }
+    }
+
+    pub fn play_by_index(&mut self, idx: usize) {
+        if idx < self.playlist.len() {
+            self.current_index = idx;
+            self.play_current_track(); // Play the track at the specified index
         }
     }
 
@@ -166,7 +186,7 @@ impl AudioPlayer {
         }
     }
 
-    pub fn get_audio_length(&self, audio_index: usize) -> Option<u64> {
+    pub fn get_lenght_by_index(&self, audio_index: usize) -> Option<u64> {
         if audio_index < self.playlist.len() {
             let src = File::open(self.playlist[audio_index].clone()).unwrap();
             let mss = MediaSourceStream::new(Box::new(src), Default::default());
@@ -205,7 +225,7 @@ impl AudioPlayer {
         Some(1)
     }
 
-    pub fn get_current_audio_length(&self) -> Option<u64> {
+    pub fn get_current_length(&self) -> Option<u64> {
         let audio_index = self.current_index;
         if audio_index < self.playlist.len() {
             let src = File::open(self.playlist[audio_index].clone()).unwrap();
@@ -283,6 +303,15 @@ impl AudioPlayer {
 
     pub fn get_current_track_name(&self) -> String {
         self.playlist[self.current_index]
+            .file_stem()
+            .unwrap()
+            .to_str()
+            .unwrap()
+            .to_string()
+    }
+
+    pub fn get_track_name_by_index(&self, idx: usize) -> String {
+        self.playlist[idx]
             .file_stem()
             .unwrap()
             .to_str()
