@@ -1,4 +1,7 @@
+// import { writable, persisted } from 'svelte-persisted-store';
 import { writable } from 'svelte/store';
-import { get_current_track_informations } from './invoke';
 
-export const currentTrack = writable(await get_current_track_informations());
+export const currentTrack = writable();
+// TODO: to be persisted on F5 but not on app close
+export const isShuffled = writable(false);
+export const isMenuOpened = writable(false);
