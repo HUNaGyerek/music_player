@@ -7,9 +7,22 @@
 		set_volume(volume);
 	}
 
+	let isMuted = $state(false);
+	let lastVolume = $state(0);
+	function toggleMuted() {
+		isMuted = !isMuted;
+		if (isMuted) {
+			lastVolume = volume;
+			volume = 0;
+			handleChangeInput();
+		} else {
+			volume = lastVolume;
+			handleChangeInput();
+		}
+	}
+
 	let volume = $state(0);
 	$effect(async () => {
-		// console.log(`Volume: ${volume}`);
 		document.querySelector('#volume-bar').style.setProperty('--value', `${volume}%`);
 	});
 
@@ -19,8 +32,8 @@
 </script>
 
 <div class="flex gap-2">
-	<button>
-		{#if volume == 0}
+	<button onclick={toggleMuted}>
+		{#if volume == 0 || isMuted}
 			<VolumeX strokeWidth={3} fill="white" />
 		{:else if Math.ceil(volume / 33) == 1}
 			<Volume strokeWidth={3} fill="white" />
