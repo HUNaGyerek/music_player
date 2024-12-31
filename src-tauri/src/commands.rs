@@ -79,18 +79,7 @@ pub fn get_current_track_informations(state: tauri::State<'_, Arc<Mutex<AudioPla
     Music {
         title: audio_player.get_current_track_name(),
         lenght: audio_player.get_current_length().unwrap(),
-    }
-}
-
-#[tauri::command]
-pub fn get_track_informations_by_index(
-    state: tauri::State<'_, Arc<Mutex<AudioPlayer>>>,
-    idx: usize,
-) -> Music {
-    let audio_player = state.lock().unwrap();
-    Music {
-        title: audio_player.get_track_name_by_index(idx),
-        lenght: audio_player.get_lenght_by_index(idx).unwrap(),
+        thumbnail: audio_player.get_music_thumbnail(),
     }
 }
 

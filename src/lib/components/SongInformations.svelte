@@ -11,7 +11,11 @@
 
 <div data-tauri-drag-region class="flex select-none gap-4">
 	{#if $currentTrack}
-		<img class="pointer-events-none h-full rounded-xl" src="https://placehold.co/80" alt="" />
+		<img
+			class="pointer-events-none h-24 w-24 rounded-xl object-cover object-center"
+			src="data:image/png;base64,{$currentTrack.thumbnail}"
+			alt=""
+		/>
 		<div class="pointer-events-none flex flex-col text-sm text-white">
 			<h2 class="text-base font-bold">{$currentTrack.title || 'Not loaded'}</h2>
 			<p>Author: {$currentTrack.author || ''}</p>

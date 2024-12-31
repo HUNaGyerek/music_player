@@ -1,5 +1,7 @@
 #![allow(dead_code)]
 
+use base64::Engine;
+use id3::Tag;
 use rodio::{source::Source, Decoder, OutputStream, OutputStreamHandle, Sink};
 use serde::{Deserialize, Serialize};
 use std::fs::File;
@@ -38,6 +40,7 @@ pub struct AudioPlayer {
 pub struct Music {
     pub title: String,
     pub lenght: u64,
+    pub thumbnail: Option<String>,
 }
 
 impl AudioPlayer {
@@ -73,7 +76,12 @@ impl AudioPlayer {
             .map(|(idx, path)| {
                 let title = path.file_stem().unwrap().to_str().unwrap().to_string();
                 let lenght = self.get_lenght_by_index(idx).unwrap();
-                Music { title, lenght }
+                let thumbnail = None;
+                Music {
+                    title,
+                    lenght,
+                    thumbnail,
+                }
             })
             .collect()
     }
@@ -341,6 +349,22 @@ impl AudioPlayer {
         // self.shuffled_indices = (0..self.playlist.len())
         //     .collect::<Vec<usize>>()
         //     .shuffle(&mut rand::thread_rng());
+    }
+
+    pub fn get_music_thumbnail(&self) -> Option<String> {
+        match Tag::read_from_path(&self.playlist[self.current_index]) {
+            Ok(tag) => {
+                if let Some(picture) = tag.pictures().next() {
+                    // Encode the picture data as Base64
+                    let base64_data =
+                        base64::engine::general_purpose::STANDARD.encode(&picture.data);
+                    Some(base64_data)
+                } else {
+                    None
+                }
+            }
+            Err(_) => None,
+        }
     }
 }
 
