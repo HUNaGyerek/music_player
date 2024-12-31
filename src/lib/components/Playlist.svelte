@@ -1,10 +1,5 @@
 <script>
-	import {
-		get_current_track_informations,
-		get_playlist,
-		get_track_informations_by_index,
-		play_by_index
-	} from '$lib/invoke';
+	import { get_current_track_informations, get_playlist, play_by_index } from '$lib/invoke';
 	import { currentTrack } from '$lib/store';
 	import { convertSecondsToMinuteText } from '$lib/utils';
 	import { Play } from 'lucide-svelte';
