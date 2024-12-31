@@ -26,3 +26,5 @@ tauri-plugin-log = "2.0.0-rc"
 symphonia = "0.5.4"
 rand = "0.8.5"
 rodio = { version = "0.20.1", features = ["symphonia-all"] }
+id3 = "1.16.0"
+base64 = "0.22.1"
