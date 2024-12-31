@@ -116,6 +116,8 @@ checksum = "34ac096ce696dc2fcabef30516bb13c0a68a11d30131d3df6f04711467681b04"
 name = "app"
 version = "0.1.0"
 dependencies = [
+ "base64 0.22.1",
+ "id3",
  "log",
  "rand 0.8.5",
  "rodio",
@@ -1724,6 +1726,17 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 2.0.91",
+]
+
+[[package]]
+name = "id3"
+version = "1.16.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9d1df50e6c625115513974d5efc34c4bc55524145e14cb2297e909ab5ece0d49"
+dependencies = [
+ "bitflags 2.6.0",
+ "byteorder",
+ "flate2",
 ]
 
 [[package]]
