@@ -23,7 +23,7 @@
 	</div>
 
 	<!-- ProgressBar -->
-	<div class="mt-4 text-center">
+	<div class="mt-1 text-center">
 		<ProgressBar />
 	</div>
 
