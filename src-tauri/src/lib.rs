@@ -20,7 +20,8 @@ pub fn run() {
         vec![
             std::path::PathBuf::from("Overtone.exe"),
             std::path::PathBuf::from(
-                "D:\\Programozas\\Rust\\youtube-downloader\\songs\\Jiyagi - BOULEVARD OF BROKEN DREAMS.mp3",
+                "C:\\Users\\Vivi-PC\\Music\\B3nte, Mike Emilio - 6 Little Eggs.mp3",
+                // "D:\\Programozas\\Rust\\youtube-downloader\\WINX CLUB [bAMbi0E3AkI].mp3",
             ),
         ]
     } else {
@@ -81,7 +82,6 @@ pub fn run() {
             toggle_playlist_menu,
             get_playlist,
             play_by_index,
-            get_track_informations_by_index,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
