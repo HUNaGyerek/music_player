@@ -6,7 +6,6 @@
 
 	onMount(async () => {
 		$currentTrack = await get_current_track_informations();
-		console.log($currentTrack.thumbnail);
 	});
 </script>
 
