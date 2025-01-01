@@ -174,30 +174,34 @@ impl AudioPlayer {
     // }
 
     pub fn next(&mut self) {
-        if self.get_current_index() + 1 < self.playlist.len() {
-            if let ShuffleState::Shuffled = self.shuffle_state {
-                self.shuffle_indecies.push(self.current_index);
-                self.current_index = self.shuffle();
-            } else {
-                self.current_index += 1;
+        if let ShuffleState::Shuffled = self.shuffle_state {
+            if !self.shuffle_indecies.contains(&self.current_index) {
+                self.shuffle_indecies.push(self.current_index)
             }
+            self.current_index = self.shuffle();
             self.play();
+        } else {
+            if self.get_current_index() + 1 < self.playlist.len() {
+                self.current_index += 1;
+                self.play();
+            }
         }
     }
 
     pub fn previous(&mut self) {
-        if self.get_current_index() > 0 {
-            if let ShuffleState::Shuffled = self.shuffle_state {
-                if self.shuffle_indecies.is_empty() {
-                    self.current_index = self.shuffle();
-                } else {
-                    self.current_index = *self.shuffle_indecies.last().unwrap();
-                    self.shuffle_indecies.pop();
-                }
+        if let ShuffleState::Shuffled = self.shuffle_state {
+            if self.shuffle_indecies.is_empty() {
+                self.current_index = self.shuffle();
             } else {
-                self.current_index -= 1;
+                self.current_index = *self.shuffle_indecies.last().unwrap();
+                self.shuffle_indecies.pop();
             }
             self.play();
+        } else {
+            if self.get_current_index() > 0 {
+                self.current_index -= 1;
+                self.play();
+            }
         }
     }
 
@@ -375,7 +379,12 @@ impl AudioPlayer {
         // indices.shuffle(&mut rand::thread_rng()); // Shuffle in place
         // self.shuffled_indices = indices; // Update the shuffled indices
         let mut rng = rand::thread_rng();
-        rng.gen_range(0..self.playlist.len())
+        let idx = rng.gen_range(0..self.playlist.len());
+        if idx == self.playlist.len() - 1 {
+            return idx - 1;
+        } else {
+            return idx + 1;
+        }
     }
 
     pub fn get_thumbnail(&self) -> Option<String> {
