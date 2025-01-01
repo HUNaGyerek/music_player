@@ -104,9 +104,14 @@ impl AudioPlayer {
                 let source = Decoder::new(BufReader::new(file));
 
                 if let Ok(source) = source {
+                    println!("{}", self.is_paused());
                     self.track_duration = Some(source.total_duration().unwrap_or(Duration::ZERO));
                     sink.lock().unwrap().append(source);
 
+                    if self.is_paused() {
+                        self.paused_position = Some(Duration::from_secs(0));
+                        return;
+                    }
                     self.start_time = Some(Instant::now());
                     self.paused_position = None;
                 } else {
@@ -119,6 +124,7 @@ impl AudioPlayer {
     }
 
     pub fn next(&mut self) {
+        println!("{}", self.is_paused());
         if let ShuffleState::Shuffled = self.shuffle_state {
             if !self.shuffle_indecies.contains(&self.current_index) {
                 self.shuffle_indecies.push(self.current_index)
@@ -134,6 +140,7 @@ impl AudioPlayer {
     }
 
     pub fn previous(&mut self) {
+        println!("{}", self.is_paused());
         if let ShuffleState::Shuffled = self.shuffle_state {
             if self.shuffle_indecies.is_empty() {
                 self.current_index = self.shuffle();
@@ -343,6 +350,10 @@ impl AudioPlayer {
             }
             Err(_) => None,
         }
+    }
+
+    pub fn is_paused(&self) -> bool {
+        self.paused_position.is_some()
     }
 }
 
