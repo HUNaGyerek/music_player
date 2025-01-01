@@ -86,14 +86,6 @@ impl AudioPlayer {
             .collect()
     }
 
-    // pub fn play_current_track(&mut self) {
-    //     // match self.shuffle_state {
-    //     //     ShuffleState::Unshuffled => self.play_unshuffled_track(),
-    //     //     ShuffleState::Shuffled => self.play_shuffled_track(),
-    //     // }
-    //     self.play()
-    // }
-
     pub fn play_by_index(&mut self, idx: usize) {
         if idx < self.playlist.len() {
             self.current_index = idx;
@@ -125,53 +117,6 @@ impl AudioPlayer {
             }
         }
     }
-    // fn play_unshuffled_track(&mut self) {
-    //     if let Some(sink) = &self.sink {
-    //         sink.lock().unwrap().stop();
-
-    //         if self.current_index < self.playlist.len() {
-    //             let file_path = &self.playlist[self.current_index];
-    //             let file = File::open(file_path).unwrap();
-    //             let source = Decoder::new(BufReader::new(file));
-
-    //             if let Ok(source) = source {
-    //                 self.track_duration = Some(source.total_duration().unwrap_or(Duration::ZERO));
-    //                 sink.lock().unwrap().append(source);
-
-    //                 self.start_time = Some(Instant::now());
-    //                 self.paused_position = None;
-    //             } else {
-    //                 self.playlist.remove(self.current_index); // remove the file from the list
-    //                 self.current_index -= 1; // decrement to play the same index that will be the next
-    //                 self.next_track();
-    //             }
-    //         }
-    //     }
-    // }
-
-    // fn play_shuffled_track(&mut self) {
-    //     if let Some(sink) = &self.sink {
-    //         sink.lock().unwrap().stop();
-
-    //         if self.current_index < self.playlist.len() {
-    //             let file_path = &self.playlist[self.shuffled_indices[self.current_index]];
-    //             let file = File::open(file_path).unwrap();
-    //             let source = Decoder::new(BufReader::new(file));
-
-    //             if let Ok(source) = source {
-    //                 self.track_duration = Some(source.total_duration().unwrap_or(Duration::ZERO));
-    //                 sink.lock().unwrap().append(source);
-
-    //                 self.start_time = Some(Instant::now());
-    //                 self.paused_position = None;
-    //             } else {
-    //                 self.playlist.remove(self.current_index); // remove the file from the list
-    //                 self.current_index -= 1; // decrement to play the same index that will be the next
-    //                 self.next_track();
-    //             }
-    //         }
-    //     }
-    // }
 
     pub fn next(&mut self) {
         if let ShuffleState::Shuffled = self.shuffle_state {
@@ -375,9 +320,6 @@ impl AudioPlayer {
     }
 
     fn shuffle(&self) -> usize {
-        // let mut indices = (0..self.playlist.len()).collect::<Vec<usize>>();
-        // indices.shuffle(&mut rand::thread_rng()); // Shuffle in place
-        // self.shuffled_indices = indices; // Update the shuffled indices
         let mut rng = rand::thread_rng();
         let idx = rng.gen_range(0..self.playlist.len());
         if idx == self.playlist.len() - 1 {
