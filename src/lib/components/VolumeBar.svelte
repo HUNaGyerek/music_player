@@ -4,7 +4,9 @@
 	import { onMount } from 'svelte';
 
 	function handleChangeInput() {
-		isMuted = false;
+		if (isMuted) {
+			isMuted = false;
+		}
 		set_volume(volume);
 	}
 
@@ -12,13 +14,14 @@
 	let lastVolume = $state(0);
 	function toggleMuted() {
 		isMuted = !isMuted;
+
 		if (isMuted) {
 			lastVolume = volume;
 			volume = 0;
-			handleChangeInput();
+			set_volume(0);
 		} else {
 			volume = lastVolume;
-			handleChangeInput();
+			set_volume(lastVolume);
 		}
 	}
 
