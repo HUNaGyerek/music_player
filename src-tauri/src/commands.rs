@@ -39,25 +39,25 @@ pub async fn play_by_index(
 #[tauri::command]
 pub fn next_track(state: tauri::State<'_, Arc<Mutex<AudioPlayer>>>) {
     let mut audio_player = state.lock().unwrap();
-    audio_player.next_track();
+    audio_player.next();
 }
 
 #[tauri::command]
 pub fn previous_track(state: tauri::State<'_, Arc<Mutex<AudioPlayer>>>) {
     let mut audio_player = state.lock().unwrap();
-    audio_player.previous_track();
+    audio_player.previous();
 }
 
 #[tauri::command]
 pub fn pause_audio(state: tauri::State<'_, Arc<Mutex<AudioPlayer>>>) {
     let mut audio_player = state.lock().unwrap();
-    audio_player.pause_audio();
+    audio_player.pause();
 }
 
 #[tauri::command]
 pub fn resume_audio(state: tauri::State<'_, Arc<Mutex<AudioPlayer>>>) {
     let mut audio_player = state.lock().unwrap();
-    audio_player.resume_audio();
+    audio_player.resume();
 }
 
 #[tauri::command]
@@ -77,28 +77,28 @@ pub fn set_volume(volume: f32, state: tauri::State<'_, Arc<Mutex<AudioPlayer>>>)
 pub fn get_current_track_informations(state: tauri::State<'_, Arc<Mutex<AudioPlayer>>>) -> Music {
     let audio_player = state.lock().unwrap();
     Music {
-        title: audio_player.get_current_track_name(),
-        lenght: audio_player.get_current_length().unwrap(),
-        thumbnail: audio_player.get_music_thumbnail(),
+        title: audio_player.get_music_name(),
+        lenght: audio_player.get_length().unwrap(),
+        thumbnail: audio_player.get_thumbnail(),
     }
 }
 
 #[tauri::command]
 pub fn get_current_audio_length(state: tauri::State<'_, Arc<Mutex<AudioPlayer>>>) -> u64 {
     let audio_player = state.lock().unwrap();
-    audio_player.get_current_length().unwrap()
+    audio_player.get_length().unwrap()
 }
 
 #[tauri::command]
 pub fn get_current_position(state: tauri::State<'_, Arc<Mutex<AudioPlayer>>>) -> Option<u64> {
     let audio_player = state.lock().unwrap();
-    audio_player.get_current_position()
+    audio_player.get_position()
 }
 
 #[tauri::command]
 pub fn get_current_music_index(state: tauri::State<'_, Arc<Mutex<AudioPlayer>>>) -> usize {
     let audio_player = state.lock().unwrap();
-    audio_player.get_current_music_index()
+    audio_player.get_current_index()
 }
 
 #[tauri::command]
@@ -126,7 +126,7 @@ pub fn get_playlist_len(state: tauri::State<'_, Arc<Mutex<AudioPlayer>>>) -> usi
 pub fn get_current_track_name(state: tauri::State<'_, Arc<Mutex<AudioPlayer>>>) -> Option<String> {
     let audio_player = state.lock().unwrap();
     if audio_player.get_playlist_len() != 0 {
-        Some(audio_player.get_current_track_name())
+        Some(audio_player.get_music_name())
     } else {
         None
     }
@@ -146,7 +146,7 @@ pub fn start_autonomous_playback(app_handle: tauri::AppHandle, state: Arc<Mutex<
             let mut player = state.lock().unwrap();
 
             // Get the current track index and position
-            let current_index = player.get_current_music_index();
+            let current_index = player.get_current_index();
 
             // Handle manual track skips or changes
             if last_index.is_none() || last_index != Some(current_index) {
@@ -157,7 +157,7 @@ pub fn start_autonomous_playback(app_handle: tauri::AppHandle, state: Arc<Mutex<
             }
 
             // Handle progress updates
-            if let Some(position) = player.get_current_position() {
+            if let Some(position) = player.get_position() {
                 if last_position.is_none() || last_position != Some(position) {
                     // Position changed (either natural or manual seek)
                     last_position = Some(position);
@@ -165,9 +165,9 @@ pub fn start_autonomous_playback(app_handle: tauri::AppHandle, state: Arc<Mutex<
                 }
 
                 // Check if the track has finished
-                if let Some(duration) = player.get_current_length() {
+                if let Some(duration) = player.get_length() {
                     if position >= duration {
-                        player.next_track(); // Move to the next track
+                        player.next(); // Move to the next track
                         last_index = None; // Reset index tracking
                         last_position = None; // Reset position tracking
                         app_handle.emit("track-changed", ()).unwrap();
