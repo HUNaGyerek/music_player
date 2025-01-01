@@ -4,6 +4,7 @@
 	import { onMount } from 'svelte';
 
 	function handleChangeInput() {
+		isMuted = false;
 		set_volume(volume);
 	}
 
