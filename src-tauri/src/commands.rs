@@ -145,7 +145,7 @@ pub fn start_autonomous_playback(app_handle: tauri::AppHandle, state: Arc<Mutex<
         loop {
             let mut player = state.lock().unwrap();
 
-            // Get the current track index and position
+            // Get the current track index
             let current_index = player.get_current_index();
 
             // Handle manual track skips or changes
