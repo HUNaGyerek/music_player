@@ -63,10 +63,13 @@ impl AudioPlayer {
         }
     }
 
-    pub fn load_playlist(&mut self, playlist: Vec<PathBuf>, index_of_opened_track: usize) {
+    pub fn load_playlist(&mut self, playlist: Vec<PathBuf>, index_of_opened_track: Option<usize>) {
         self.playlist = playlist;
-        self.current_index = index_of_opened_track;
-        self.play();
+        println!("{}", self.get_playlist_len());
+        if self.get_playlist_len() > 0 {
+            self.current_index = index_of_opened_track.unwrap();
+            self.play();
+        }
     }
 
     pub fn get_playlist(&self) -> Vec<Music> {
@@ -104,7 +107,6 @@ impl AudioPlayer {
                 let source = Decoder::new(BufReader::new(file));
 
                 if let Ok(source) = source {
-                    println!("{}", self.is_paused());
                     self.track_duration = Some(source.total_duration().unwrap_or(Duration::ZERO));
                     sink.lock().unwrap().append(source);
 
@@ -124,7 +126,6 @@ impl AudioPlayer {
     }
 
     pub fn next(&mut self) {
-        println!("{}", self.is_paused());
         if let ShuffleState::Shuffled = self.shuffle_state {
             if !self.shuffle_indecies.contains(&self.current_index) {
                 self.shuffle_indecies.push(self.current_index)
@@ -140,7 +141,6 @@ impl AudioPlayer {
     }
 
     pub fn previous(&mut self) {
-        println!("{}", self.is_paused());
         if let ShuffleState::Shuffled = self.shuffle_state {
             if self.shuffle_indecies.is_empty() {
                 self.current_index = self.shuffle();
@@ -229,9 +229,8 @@ impl AudioPlayer {
     }
 
     pub fn get_length(&self) -> Option<u64> {
-        let audio_index = self.get_current_index();
-        if audio_index < self.playlist.len() {
-            let src = File::open(self.playlist[audio_index].clone()).unwrap();
+        if self.get_current_index() < self.playlist.len() {
+            let src = File::open(self.playlist[self.get_current_index()].clone()).unwrap();
             let mss = MediaSourceStream::new(Box::new(src), Default::default());
             let hint = Hint::new();
 
@@ -265,7 +264,7 @@ impl AudioPlayer {
                 return Some(duration.seconds);
             }
         }
-        Some(1)
+        None
     }
 
     pub fn get_position(&self) -> Option<u64> {
@@ -316,11 +315,9 @@ impl AudioPlayer {
     pub fn toggle_shuffle(&mut self) {
         match self.shuffle_state {
             ShuffleState::Unshuffled => {
-                println!("{:?}", "shuff");
                 self.shuffle_state = ShuffleState::Shuffled;
             }
             ShuffleState::Shuffled => {
-                println!("{:?}", "unshuff");
                 self.shuffle_state = ShuffleState::Unshuffled;
             }
         }

@@ -12,7 +12,6 @@ pub async fn toggle_playlist_menu<R: Runtime>(
     window: tauri::Window<R>,
 ) -> Result<(), tauri::Error> {
     let window_size = window.inner_size()?;
-    println!("{window_size:?}");
     match window_size {
         CLOSED_DIMENSIONS => window.set_size(tauri::Size::Logical(tauri::LogicalSize {
             width: 816_f64,
@@ -39,31 +38,38 @@ pub async fn play_by_index(
 #[tauri::command]
 pub fn next_track(state: tauri::State<'_, Arc<Mutex<AudioPlayer>>>) {
     let mut audio_player = state.lock().unwrap();
-    audio_player.next();
+    if audio_player.get_playlist_len() > 0 {
+        audio_player.next();
+    }
 }
 
 #[tauri::command]
 pub fn previous_track(state: tauri::State<'_, Arc<Mutex<AudioPlayer>>>) {
     let mut audio_player = state.lock().unwrap();
-    audio_player.previous();
+    if audio_player.get_playlist_len() > 0 {
+        audio_player.previous();
+    }
 }
 
 #[tauri::command]
 pub fn pause_audio(state: tauri::State<'_, Arc<Mutex<AudioPlayer>>>) {
     let mut audio_player = state.lock().unwrap();
-    audio_player.pause();
+    if audio_player.get_playlist_len() > 0 {
+        audio_player.pause();
+    }
 }
 
 #[tauri::command]
 pub fn resume_audio(state: tauri::State<'_, Arc<Mutex<AudioPlayer>>>) {
     let mut audio_player = state.lock().unwrap();
-    audio_player.resume();
+    if audio_player.get_playlist_len() > 0 {
+        audio_player.resume();
+    }
 }
 
 #[tauri::command]
 pub fn get_volume(state: tauri::State<'_, Arc<Mutex<AudioPlayer>>>) -> Option<f32> {
     let audio_player = state.lock().unwrap();
-    println!("{:?}", audio_player.get_volume());
     audio_player.get_volume()
 }
 
@@ -74,19 +80,24 @@ pub fn set_volume(volume: f32, state: tauri::State<'_, Arc<Mutex<AudioPlayer>>>)
 }
 
 #[tauri::command]
-pub fn get_current_track_informations(state: tauri::State<'_, Arc<Mutex<AudioPlayer>>>) -> Music {
+pub fn get_current_track_informations(
+    state: tauri::State<'_, Arc<Mutex<AudioPlayer>>>,
+) -> Option<Music> {
     let audio_player = state.lock().unwrap();
-    Music {
-        title: audio_player.get_music_name(),
-        lenght: audio_player.get_length().unwrap(),
-        thumbnail: audio_player.get_thumbnail(),
+    if audio_player.get_playlist_len() > 0 {
+        return Some(Music {
+            title: audio_player.get_music_name(),
+            lenght: audio_player.get_length().unwrap(),
+            thumbnail: audio_player.get_thumbnail(),
+        });
     }
+    None
 }
 
 #[tauri::command]
-pub fn get_current_audio_length(state: tauri::State<'_, Arc<Mutex<AudioPlayer>>>) -> u64 {
+pub fn get_current_audio_length(state: tauri::State<'_, Arc<Mutex<AudioPlayer>>>) -> Option<u64> {
     let audio_player = state.lock().unwrap();
-    audio_player.get_length().unwrap()
+    audio_player.get_length()
 }
 
 #[tauri::command]
@@ -119,17 +130,6 @@ pub fn set_current_time(position: u64, state: tauri::State<'_, Arc<Mutex<AudioPl
 pub fn get_playlist_len(state: tauri::State<'_, Arc<Mutex<AudioPlayer>>>) -> usize {
     let audio_player = state.lock().unwrap();
     audio_player.get_playlist_len()
-}
-
-// Not Used
-#[tauri::command]
-pub fn get_current_track_name(state: tauri::State<'_, Arc<Mutex<AudioPlayer>>>) -> Option<String> {
-    let audio_player = state.lock().unwrap();
-    if audio_player.get_playlist_len() != 0 {
-        Some(audio_player.get_music_name())
-    } else {
-        None
-    }
 }
 
 #[tauri::command]

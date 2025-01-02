@@ -24,7 +24,7 @@
 
 	let lenght = $state();
 	onMount(async () => {
-		lenght = await get_current_audio_length();
+		lenght = (await get_current_audio_length()) || 0;
 
 		listen('track-progress', (event) => {
 			progress = event.payload;
@@ -48,7 +48,7 @@
 		bind:value={progress}
 		onchange={seek_to}
 	/>
-	<p class="select-none text-sm text-white">{convertSecondsToMinuteText(progress || 0)}</p>
+	<p class="select-none text-sm text-white">{convertSecondsToMinuteText(progress) || '00:00:00'}</p>
 </div>
 
 <style lang="postcss">

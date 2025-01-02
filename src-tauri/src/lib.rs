@@ -47,7 +47,9 @@ pub fn run() {
         audio_player
             .lock()
             .unwrap()
-            .load_playlist(entries, position.unwrap());
+            .load_playlist(entries, position);
+    } else {
+        audio_player.lock().unwrap().load_playlist(vec![], None);
     }
 
     tauri::Builder::default()
@@ -75,7 +77,6 @@ pub fn run() {
             get_current_music_index,
             set_current_time,
             get_playlist_len,
-            get_current_track_name,
             shuffle_playlist,
             get_current_track_informations,
             get_current_audio_length,
