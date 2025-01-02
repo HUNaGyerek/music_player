@@ -31,8 +31,6 @@
 		});
 
 		listen('track-changed', async (event) => {
-			console.log('Changed');
-
 			$currentTrack = await get_current_track_informations();
 			lenght = $currentTrack.lenght;
 		});

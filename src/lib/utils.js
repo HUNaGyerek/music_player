@@ -1,5 +1,5 @@
 export function convertSecondsToMinuteText(seconds) {
-	if (typeof +seconds !== Number) return;
+	if (!Number.isInteger(seconds)) return;
 	var date = new Date(0);
 	date.setSeconds(seconds);
 	return date.toISOString().substring(11, 19);

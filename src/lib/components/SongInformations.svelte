@@ -17,7 +17,7 @@
 		{#if $currentTrack?.thumbnail}
 			<img
 				class="pointer-events-none h-full w-24 rounded-xl object-cover object-center"
-				src="data:image/png;base64,{$currentTrack?.thumbnail}"
+				src="data:image/png;base64,{$currentTrack.thumbnail}"
 				alt=""
 			/>
 		{/if}
